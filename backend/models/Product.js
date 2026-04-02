@@ -29,7 +29,7 @@ const productSchema = new mongoose.Schema(
       enum: ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'box', 'can'],
     },
 
-    // Optional: link product to user (VERY IMPORTANT later)
+
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

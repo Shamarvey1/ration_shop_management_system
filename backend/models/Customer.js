@@ -16,7 +16,6 @@ const customerSchema = new mongoose.Schema(
       type: String,
     },
 
-    // 🔐 Link to logged-in user (VERY IMPORTANT)
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

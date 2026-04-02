@@ -25,9 +25,6 @@ const addProduct = async (req, res) => {
   }
 };
 
-
-
-// 🟢 GET ALL PRODUCTS (only for logged-in user)
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find({ user: req.user.id }).sort({ createdAt: -1 });
@@ -41,7 +38,6 @@ const getProducts = async (req, res) => {
 
 
 
-// 🟢 UPDATE PRODUCT
 const updateProduct = async (req, res) => {
   try {
     const { name, category, price, quantity, unit } = req.body;
@@ -51,12 +47,10 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // check ownership (VERY IMPORTANT)
     if (product.user.toString() !== req.user.id) {
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    // Update only provided fields
     if (name !== null) product.name = name;
     if (category !== null) product.category = category;
     if (price !== null) product.price = price;
@@ -72,7 +66,6 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// 🟢 DELETE PRODUCT
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -81,7 +74,6 @@ const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // check ownership (VERY IMPORTANT)
     if (product.user.toString() !== req.user.id) {
       return res.status(401).json({ message: "Not authorized" });
     }
