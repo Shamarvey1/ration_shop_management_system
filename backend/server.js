@@ -7,15 +7,17 @@ const authRoutes = require('./routes/authRoutes');
 const protect = require('./middleware/authMiddleware');
 const connectDB = require('./config/db');
 const productRoutes = require("./routes/productRoutes");
+const customerRoutes = require("./routes/customerRoutes.js");
 
 app.use(cors());
 connectDB();
 app.use(express.json());
 app.get('/',(req,res)=>{
-    res.send("Saksham mera pyara bahen hai,meri pyari bahen!");
+    res.send("Welcome to the Inventory Management API");
 })
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/customers", customerRoutes);
 app.get("/api/test", protect , (req, res) => {
   res.json({
     message: "Protected route working",

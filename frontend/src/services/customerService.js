@@ -1,0 +1,36 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
+export const getCustomers = async () => {
+  const res = await fetch(`${API_URL}/customers`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  return res.json();
+};
+
+
+export const addCustomer = async (customerData) => {
+  const res = await fetch(`${API_URL}/customers`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify(customerData),
+  });
+
+  return res.json();
+};
+
+export const deleteCustomer = async (id) => {
+  const res = await fetch(`${API_URL}/customers/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  return res.json();
+};
