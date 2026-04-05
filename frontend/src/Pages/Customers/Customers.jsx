@@ -13,7 +13,6 @@ function Customers() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
-
   const fetchCustomers = async () => {
     try {
       const data = await getCustomers();
@@ -51,11 +50,12 @@ function Customers() {
     fetchCustomers();
   };
 
-
   const handleDelete = async (id) => {
     await deleteCustomer(id);
     fetchCustomers();
   };
+
+  const sortedCustomers = [...customers].sort((a, b) => b.debt - a.debt);
 
   return (
     <div className="customers-container">
@@ -88,14 +88,28 @@ function Customers() {
         <button type="submit">Add Customer</button>
       </form>
 
-
       <div className="customer-list">
-        {Array.isArray(customers) && customers.length > 0 ? (
-          customers.map((customer) => (
-            <div key={customer._id} className="customer-card">
+        {Array.isArray(sortedCustomers) && sortedCustomers.length > 0 ? (
+          sortedCustomers.map((customer) => (
+            <div
+              key={customer._id}
+              className="customer-card"
+              style={{
+                background:
+                  customer.debt > 0 ? "#ffe6e6" : "#e6ffe6", // 🔥 highlight
+              }}
+            >
               <h4>{customer.name}</h4>
               <p>Phone: {customer.phone}</p>
               <p>Address: {customer.address || "N/A"}</p>
+
+              <p>
+                <strong>Debt:</strong> ₹{customer.debt || 0}
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                {customer.debt > 0 ? "⚠️ Has Debt" : "✅ Clear"}
+              </p>
 
               <button onClick={() => handleDelete(customer._id)}>
                 Delete
