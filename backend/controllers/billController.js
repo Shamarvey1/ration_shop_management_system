@@ -3,27 +3,39 @@ const Product = require("../models/Product");
 const Customer = require("../models/Customer");
 
 
+
 const createBill = async (req, res) => {
   try {
     const { customer, items, paidAmount } = req.body;
 
+
     if (!customer || !items || items.length === 0) {
-      return res.status(400).json({ message: "Customer and items are required" });
+      return res.status(400).json({
+        message: "Customer and items are required",
+      });
     }
 
     let totalAmount = 0;
-
     const processedItems = [];
 
     for (let item of items) {
       const product = await Product.findById(item.product);
 
       if (!product) {
-        return res.status(404).json({ message: "Product not found" });
+        return res.status(404).json({
+          message: "Product not found",
+        });
+      }
+
+      const quantity = item.quantity;
+
+      if (product.quantity < quantity) {
+        return res.status(400).json({
+          message: `Not enough stock for ${product.name}`,
+        });
       }
 
       const price = product.price;
-      const quantity = item.quantity;
 
       totalAmount += price * quantity;
 
@@ -37,9 +49,9 @@ const createBill = async (req, res) => {
       await product.save();
     }
 
-
     const paid = paidAmount || 0;
     const remainingAmount = totalAmount - paid;
+
 
     const bill = await Bill.create({
       customer,
@@ -50,7 +62,18 @@ const createBill = async (req, res) => {
       user: req.user.id,
     });
 
+    if (bill.remainingAmount > 0) {
+      const foundCustomer = await Customer.findById(customer);
+
+      if (foundCustomer) {
+        foundCustomer.debt += bill.remainingAmount;
+        await foundCustomer.save();
+      }
+    }
+
+
     res.status(201).json(bill);
+
   } catch (error) {
     console.error("Create Bill Error:", error);
     res.status(500).json({ message: "Server error" });
