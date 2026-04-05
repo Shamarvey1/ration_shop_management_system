@@ -7,6 +7,7 @@ import Dashboard from "../Pages/Dashboard/Dashboard";
 import Products from "../Pages/Products/Products";
 import Billing from "../Pages/Billing/Billing";
 import Customers from "../Pages/Customers/Customers";
+import Reports from "../Pages/Reports/Reports";
 
 const AppRoutes = () => {
   return (
@@ -19,6 +20,7 @@ const AppRoutes = () => {
         <Route path="products" element={<Products />} />
         <Route path="billing" element={<Billing />} />
         <Route path="customers" element={<Customers />} />
+        <Route path="reports" element={<Reports />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
