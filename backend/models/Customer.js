@@ -21,6 +21,11 @@ const customerSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    debt: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
