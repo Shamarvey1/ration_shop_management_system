@@ -5,7 +5,6 @@ const Product = require("../models/Product");
 
 const getSummaryReport = async (req, res) => {
   try {
-    // 🔹 1. Total Sales (sum of all bills)
     const totalSalesData = await Bill.aggregate([
       { $match: { user: req.user.id } },
       {
@@ -16,6 +15,7 @@ const getSummaryReport = async (req, res) => {
         },
       },
     ]);
+    console.log("Total Sales Data:", totalSalesData);
 
     const totalSales = totalSalesData[0]?.totalSales || 0;
     const totalBills = totalSalesData[0]?.totalBills || 0;
