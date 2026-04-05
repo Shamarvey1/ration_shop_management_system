@@ -30,6 +30,10 @@ function Billing() {
     setItems([...items, { product: "", quantity: 1 }]);
   };
 
+  const removeItem = (index) => {
+    const updated = items.filter((_, i) => i !== index);
+    setItems(updated);
+  };
 
   const updateItem = (index, field, value) => {
     const updated = [...items];
@@ -37,8 +41,31 @@ function Billing() {
     setItems(updated);
   };
 
+  const calculateTotal = () => {
+    let total = 0;
+
+    items.forEach((item) => {
+      const product = products.find((p) => p._id === item.product);
+      if (product) {
+        total += product.price * item.quantity;
+      }
+    });
+
+    return total;
+  };
+
   const handleCreateBill = async (e) => {
     e.preventDefault();
+
+    if (!selectedCustomer) {
+      alert("Please select a customer");
+      return;
+    }
+
+    if (items.length === 0) {
+      alert("Add at least one product");
+      return;
+    }
 
     const billData = {
       customer: selectedCustomer,
@@ -47,7 +74,6 @@ function Billing() {
     };
 
     await createBill(billData);
-
 
     setItems([]);
     setPaidAmount("");
@@ -60,8 +86,8 @@ function Billing() {
     <div>
       <h2>Billing</h2>
 
-
       <form onSubmit={handleCreateBill}>
+        {/* Customer */}
         <select
           value={selectedCustomer}
           onChange={(e) => setSelectedCustomer(e.target.value)}
@@ -75,31 +101,53 @@ function Billing() {
           ))}
         </select>
 
-        {items.map((item, index) => (
-          <div key={index}>
-            <select
-              value={item.product}
-              onChange={(e) =>
-                updateItem(index, "product", e.target.value)
-              }
-            >
-              <option value="">Select Product</option>
-              {products.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.name} (₹{p.price})
-                </option>
-              ))}
-            </select>
+        {items.map((item, index) => {
+          const product = products.find((p) => p._id === item.product);
+          const subtotal = product ? product.price * item.quantity : 0;
 
-            <input
-              type="number"
-              value={item.quantity}
-              onChange={(e) =>
-                updateItem(index, "quantity", Number(e.target.value))
-              }
-            />
-          </div>
-        ))}
+          return (
+            <div key={index} style={{ marginBottom: "10px" }}>
+              <select
+                value={item.product}
+                onChange={(e) =>
+                  updateItem(index, "product", e.target.value)
+                }
+              >
+                <option value="">Select Product</option>
+                {products.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.name} (₹{p.price})
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="number"
+                min="1"
+                value={item.quantity}
+                onChange={(e) =>
+                  updateItem(
+                    index,
+                    "quantity",
+                    Math.max(1, Number(e.target.value))
+                  )
+                }
+              />
+
+              <span style={{ marginLeft: "10px" }}>
+                ₹{subtotal}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => removeItem(index)}
+                style={{ marginLeft: "10px" }}
+              >
+                ❌ Remove
+              </button>
+            </div>
+          );
+        })}
 
         <button type="button" onClick={addItem}>
           Add Product
@@ -112,12 +160,28 @@ function Billing() {
           onChange={(e) => setPaidAmount(e.target.value)}
         />
 
+
+        <p><strong>Total:</strong> ₹{calculateTotal()}</p>
+        <p><strong>Paid:</strong> ₹{paidAmount || 0}</p>
+        <p>
+          <strong>Remaining:</strong> ₹
+          {calculateTotal() - (paidAmount || 0)}
+        </p>
+
         <button type="submit">Create Bill</button>
       </form>
 
+      {/* Bills */}
       <h3>All Bills</h3>
       {bills.map((bill) => (
-        <div key={bill._id} style={{ border: "1px solid gray", margin: "10px", padding: "10px" }}>
+        <div
+          key={bill._id}
+          style={{
+            border: "1px solid gray",
+            margin: "10px",
+            padding: "10px",
+          }}
+        >
           <p><strong>Customer:</strong> {bill.customer?.name}</p>
 
           {bill.items.map((item, i) => (
