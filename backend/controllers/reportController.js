@@ -49,7 +49,50 @@ const getSummaryReport = async (req, res) => {
   }
 };
 
+const getSalesReport = async (req, res) => {
+  try {
+    const bills = await Bill.find({ user: req.user.id })
+      .populate("items.product");
+    let totalSales = 0;
+    const totalTransactions = bills.length;
+    const productMap = {};
+
+    for (let bill of bills) {
+      totalSales += bill.totalAmount;
+
+      for (let item of bill.items) {
+        const productName = item.product?.name || "Unknown";
+
+        if (!productMap[productName]) {
+          productMap[productName] = 0;
+        }
+
+        productMap[productName] += item.quantity;
+      }
+    }
+    const topProducts = Object.keys(productMap).map((name) => ({
+      name,
+      quantity: productMap[name],
+    }));
+
+    topProducts.sort((a, b) => b.quantity - a.quantity);
+
+    const top3 = topProducts.slice(0, 3);
+
+    res.status(200).json({
+      totalSales,
+      totalTransactions,
+      topProducts: top3,
+    });
+
+  } catch (error) {
+    console.error("Sales Report Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 module.exports = {
   getSummaryReport,
+  getSalesReport
 };

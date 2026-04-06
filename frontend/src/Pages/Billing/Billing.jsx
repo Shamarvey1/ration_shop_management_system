@@ -87,7 +87,6 @@ function Billing() {
       <h2>Billing</h2>
 
       <form onSubmit={handleCreateBill}>
-        {/* Customer */}
         <select
           value={selectedCustomer}
           onChange={(e) => setSelectedCustomer(e.target.value)}
@@ -182,7 +181,7 @@ function Billing() {
             padding: "10px",
           }}
         >
-          <p><strong>Customer:</strong> {bill.customer?.name}</p>
+          <p><strong>Customer:</strong>{" "}{bill.customer?.name || bill.customerName}</p>
 
           {bill.items.map((item, i) => (
             <div key={i}>

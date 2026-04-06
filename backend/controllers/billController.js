@@ -3,11 +3,9 @@ const Product = require("../models/Product");
 const Customer = require("../models/Customer");
 
 
-
 const createBill = async (req, res) => {
   try {
     const { customer, items, paidAmount } = req.body;
-
 
     if (!customer || !items || items.length === 0) {
       return res.status(400).json({
@@ -15,8 +13,17 @@ const createBill = async (req, res) => {
       });
     }
 
+
+    const foundCustomer = await Customer.findById(customer);
+    if (!foundCustomer) {
+      return res.status(404).json({
+        message: "Customer not found",
+      });
+    }
+
     let totalAmount = 0;
     const processedItems = [];
+
 
     for (let item of items) {
       const product = await Product.findById(item.product);
@@ -50,11 +57,19 @@ const createBill = async (req, res) => {
     }
 
     const paid = paidAmount || 0;
+
+    if (paid > totalAmount) {
+      return res.status(400).json({
+        message: "Paid amount cannot be greater than total amount",
+      });
+    }
+
     const remainingAmount = totalAmount - paid;
 
 
     const bill = await Bill.create({
       customer,
+      customerName: foundCustomer.name, // 🔥 NEW (important)
       items: processedItems,
       totalAmount,
       paidAmount: paid,
@@ -63,14 +78,9 @@ const createBill = async (req, res) => {
     });
 
     if (bill.remainingAmount > 0) {
-      const foundCustomer = await Customer.findById(customer);
-
-      if (foundCustomer) {
-        foundCustomer.debt += bill.remainingAmount;
-        await foundCustomer.save();
-      }
+      foundCustomer.debt += bill.remainingAmount;
+      await foundCustomer.save();
     }
-
 
     res.status(201).json(bill);
 
