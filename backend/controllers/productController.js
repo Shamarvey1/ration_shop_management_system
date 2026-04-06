@@ -1,21 +1,25 @@
 const Product = require("../models/Product");
 
 
+
 const addProduct = async (req, res) => {
   try {
-    const { name, category, price, quantity, unit } = req.body;
+    const { name, category, price, purchasePrice, quantity, unit } = req.body;
 
-    if (!name || !category || !price || !quantity || !unit) {
-      return res.status(400).json({ message: "All fields are required (name, category, price, quantity, unit)" });
+    if (!name || !category || !price || !purchasePrice || !quantity || !unit) {
+      return res.status(400).json({
+        message: "All fields are required (name, category, price, purchasePrice, quantity, unit)",
+      });
     }
 
     const product = await Product.create({
       name,
       category,
       price,
+      purchasePrice,
       quantity,
       unit,
-      user: req.user.id, 
+      user: req.user.id,
     });
 
     res.status(201).json(product);
@@ -25,10 +29,10 @@ const addProduct = async (req, res) => {
   }
 };
 
+
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find({ user: req.user.id }).sort({ createdAt: -1 });
-
     res.status(200).json(products);
   } catch (error) {
     console.error("Get Products Error:", error);
@@ -37,10 +41,10 @@ const getProducts = async (req, res) => {
 };
 
 
-
 const updateProduct = async (req, res) => {
   try {
-    const { name, category, price, quantity, unit } = req.body;
+    const { name, category, price, purchasePrice, quantity, unit } = req.body;
+
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -51,20 +55,26 @@ const updateProduct = async (req, res) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    if (name !== null) product.name = name;
-    if (category !== null) product.category = category;
-    if (price !== null) product.price = price;
-    if (quantity !== null) product.quantity = quantity;
-    if (unit !== null) product.unit = unit;
+    if (name !== undefined) product.name = name;
+    if (category !== undefined) product.category = category;
+    if (price !== undefined) product.price = price;
+    if (purchasePrice !== undefined) product.purchasePrice = purchasePrice; // 🔥 NEW
+    if (quantity !== undefined) product.quantity = quantity;
+    if (unit !== undefined) product.unit = unit;
 
     await product.save();
 
-    res.status(200).json({ message: "Product updated", product });
+    res.status(200).json({
+      message: "Product updated",
+      product,
+    });
+
   } catch (error) {
     console.error("Update Product Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 const deleteProduct = async (req, res) => {
   try {
@@ -81,11 +91,13 @@ const deleteProduct = async (req, res) => {
     await product.deleteOne();
 
     res.status(200).json({ message: "Product deleted" });
+
   } catch (error) {
     console.error("Delete Product Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 module.exports = {
   addProduct,
