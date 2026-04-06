@@ -16,16 +16,18 @@ function Products() {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
-  const [purchasePrice, setPurchasePrice] = useState(""); // 🔥 NEW
+  const [purchasePrice, setPurchasePrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState("");
 
+  const categoryOptions = ['Grains', 'Pulses', 'Spices', 'Oils', 'Sugars', 'Dairy', 'Beverages', 'Other'];
+  const unitOptions = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'box', 'can'];
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError("");
       const data = await getProducts();
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Failed to load products");
@@ -48,9 +50,9 @@ function Products() {
       await addProduct({
         name,
         category,
-        price,
-        purchasePrice, 
-        quantity,
+        price: Number(price),
+        purchasePrice: Number(purchasePrice),
+        quantity: Number(quantity),
         unit,
       });
 
@@ -65,15 +67,17 @@ function Products() {
     }
   };
 
+
   const handleEdit = (product) => {
     setEditingId(product._id);
     setName(product.name);
     setCategory(product.category);
-    setPrice(product.price.toString());
-    setPurchasePrice(product.purchasePrice?.toString() || ""); // 🔥 ADDED
-    setQuantity(product.quantity.toString());
+    setPrice(product.price?.toString() || "");
+    setPurchasePrice(product.purchasePrice?.toString() || "");
+    setQuantity(product.quantity?.toString() || "");
     setUnit(product.unit);
   };
+
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
@@ -85,9 +89,9 @@ function Products() {
       await updateProduct(editingId, {
         name,
         category,
-        price,
-        purchasePrice, 
-        quantity,
+        price: Number(price),
+        purchasePrice: Number(purchasePrice),
+        quantity: Number(quantity),
         unit,
       });
 
@@ -112,13 +116,12 @@ function Products() {
     }
   };
 
-
   const resetForm = () => {
     setEditingId(null);
     setName("");
     setCategory("");
     setPrice("");
-    setPurchasePrice(""); // 🔥 ADDED
+    setPurchasePrice("");
     setQuantity("");
     setUnit("");
   };
@@ -140,13 +143,18 @@ function Products() {
           required
         />
 
-        <input
-          type="text"
-          placeholder="Category"
+        <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required
-        />
+        >
+          <option value="">Select Category</option>
+          {categoryOptions.map((cat, index) => (
+            <option key={index} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
 
         <input
           type="number"
@@ -155,7 +163,7 @@ function Products() {
           onChange={(e) => setPrice(e.target.value)}
           required
         />
- 
+
         <input
           type="number"
           placeholder="Purchase Price"
@@ -163,6 +171,7 @@ function Products() {
           onChange={(e) => setPurchasePrice(e.target.value)}
           required
         />
+
 
         <input
           type="number"
@@ -172,32 +181,50 @@ function Products() {
           required
         />
 
-        <input
-          type="text"
-          placeholder="Unit (kg, litre, etc)"
+        <select
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
           required
-        />
+        >
+          <option value="">Select Unit</option>
+          {unitOptions.map((u, index) => (
+            <option key={index} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
 
         <button type="submit">
           {editingId ? "Update Product" : "Add Product"}
         </button>
+
+        {editingId && (
+          <button type="button" onClick={resetForm}>
+            Cancel
+          </button>
+        )}
       </form>
 
-      <div className="product-list">
-        {products.map((product) => (
-          <div key={product._id} className="product-card">
-            <h4>{product.name}</h4>
-            <p><strong>Category:</strong> {product.category}</p>
-            <p><strong>Selling Price:</strong> ₹{product.price}</p>
-            <p><strong>Cost Price:</strong> ₹{product.purchasePrice}</p> {/* 🔥 NEW */}
-            <p><strong>Quantity:</strong> {product.quantity} {product.unit}</p>
 
-            <button onClick={() => handleEdit(product)}>Edit</button>
-            <button onClick={() => handleDelete(product._id)}>Delete</button>
-          </div>
-        ))}
+      <div className="product-list">
+        {products.length > 0 ? (
+          products.map((product) => (
+            <div key={product._id} className="product-card">
+              <h4>{product.name}</h4>
+              <p><strong>Category:</strong> {product.category}</p>
+              <p><strong>Selling Price:</strong> ₹{product.price}</p>
+              <p><strong>Cost Price:</strong> ₹{product.purchasePrice}</p>
+              <p>
+                <strong>Quantity:</strong> {product.quantity} {product.unit}
+              </p>
+
+              <button onClick={() => handleEdit(product)}>Edit</button>
+              <button onClick={() => handleDelete(product._id)}>Delete</button>
+            </div>
+          ))
+        ) : (
+          <p>No products found</p>
+        )}
       </div>
     </div>
   );

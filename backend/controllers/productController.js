@@ -58,7 +58,7 @@ const updateProduct = async (req, res) => {
     if (name !== undefined) product.name = name;
     if (category !== undefined) product.category = category;
     if (price !== undefined) product.price = price;
-    if (purchasePrice !== undefined) product.purchasePrice = purchasePrice; // 🔥 NEW
+    if (purchasePrice !== undefined) product.purchasePrice = purchasePrice; 
     if (quantity !== undefined) product.quantity = quantity;
     if (unit !== undefined) product.unit = unit;
 
