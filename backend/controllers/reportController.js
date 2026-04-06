@@ -91,8 +91,37 @@ const getSalesReport = async (req, res) => {
   }
 };
 
+const getProfitReport = async (req, res) => {
+  try {
+    const bills = await Bill.find({ user: req.user.id })
+      .populate("items.product");
+
+    let totalProfit = 0;
+
+    for (let bill of bills) {
+      for (let item of bill.items) {
+        const sellingPrice = item.price;
+        const purchasePrice = item.product?.purchasePrice || 0;
+        const quantity = item.quantity;
+
+        const profit = (sellingPrice - purchasePrice) * quantity;
+
+        totalProfit += profit;
+      }
+    }
+
+    res.status(200).json({
+      totalProfit,
+    });
+
+  } catch (error) {
+    console.error("Profit Report Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 module.exports = {
   getSummaryReport,
-  getSalesReport
+  getSalesReport,
+  getProfitReport,
 };
