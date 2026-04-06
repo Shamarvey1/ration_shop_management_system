@@ -3,6 +3,7 @@ import {
   getSummaryReport,
   getSalesReport,
   getProfitReport,
+  getSalesTrend,
 } from "../../services/reportService";
 import {
   LineChart,
@@ -20,26 +21,34 @@ function Reports() {
   const [report, setReport] = useState(null);
   const [sales, setSales] = useState(null);
   const [profit, setProfit] = useState(null);
+  const [trend, setTrend] = useState([]);
+
+  const [filter, setFilter] = useState("daily"); 
 
   useEffect(() => {
     fetchReport();
-  }, []);
+  }, [filter]); 
 
   const fetchReport = async () => {
     const summaryData = await getSummaryReport();
     const salesData = await getSalesReport();
     const profitData = await getProfitReport();
+    const trendData = await getSalesTrend(filter); 
 
     setReport(summaryData);
     setSales(salesData);
     setProfit(profitData);
+    setTrend(trendData);
   };
 
   if (!report || !sales || !profit) return <p>Loading...</p>;
 
-  const salesTrendData = [
-    { name: "Sales", value: report.totalSales },
-  ];
+
+  const salesTrendData = trend.map((item) => ({
+    date: item._id,
+    sales: item.totalSales,
+  }));
+
 
   const topProductsData = sales.topProducts.map((p) => ({
     name: p.name,
@@ -49,6 +58,16 @@ function Reports() {
   return (
     <div className="reports-container">
       <h2>Reports Dashboard</h2>
+
+      {/* 🟢 FILTER UI */}
+      <div style={{ marginBottom: "20px" }}>
+        <label>Filter: </label>
+        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="daily">Daily</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+
 
       <div className="cards">
         <div className="card">
@@ -77,7 +96,6 @@ function Reports() {
         </div>
       </div>
 
-      {/* 🟡 SALES ANALYTICS */}
       <div className="cards" style={{ marginTop: "20px" }}>
         <div className="card">
           <h3>Total Transactions</h3>
@@ -86,20 +104,20 @@ function Reports() {
       </div>
 
       <div style={{ marginTop: "30px" }}>
-        <h3>Sales Overview</h3>
-        <LineChart width={400} height={250} data={salesTrendData}>
+        <h3>Sales Trend ({filter})</h3>
+        <LineChart width={500} height={250} data={salesTrendData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
+          <XAxis dataKey="date" />
           <YAxis />
           <Tooltip />
-          <Line type="monotone" dataKey="value" />
+          <Line type="monotone" dataKey="sales" />
         </LineChart>
       </div>
 
-      {/* 📊 BAR CHART */}
+
       <div style={{ marginTop: "30px" }}>
         <h3>Top Products</h3>
-        <BarChart width={400} height={250} data={topProductsData}>
+        <BarChart width={500} height={250} data={topProductsData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />

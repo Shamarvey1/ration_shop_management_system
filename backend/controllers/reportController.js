@@ -119,9 +119,53 @@ const getProfitReport = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+const mongoose = require("mongoose");
 
+const getSalesTrend = async (req, res) => {
+  try {
+    const { filter } = req.query;
+
+    let groupFormat = "%Y-%m-%d";
+
+    if (filter === "monthly") {
+      groupFormat = "%Y-%m";
+    } else if (filter === "yearly") {
+      groupFormat = "%Y";
+    }
+
+    const salesTrend = await Bill.aggregate([
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(req.user.id), 
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: groupFormat,
+              date: "$createdAt",
+            },
+          },
+          totalSales: { $sum: "$totalAmount" },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+
+    res.status(200).json(salesTrend);
+
+  } catch (error) {
+    console.error("Sales Trend Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 module.exports = {
   getSummaryReport,
   getSalesReport,
   getProfitReport,
+    getSalesTrend,
 };
