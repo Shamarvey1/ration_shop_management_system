@@ -45,3 +45,12 @@ export const getSalesReport = async () => {
     return null;
   }
 };
+export const getProfitReport = async () => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/reports/profit`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  return res.json();
+};
