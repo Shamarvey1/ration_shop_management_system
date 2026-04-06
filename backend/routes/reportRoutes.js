@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getSummaryReport } = require("../controllers/reportController");
+const { getSummaryReport,getSalesReport } = require("../controllers/reportController");
 const protect = require("../middleware/authMiddleware");
 
 
