@@ -1,12 +1,13 @@
 const Bill = require("../models/Bill");
 const Product = require("../models/Product");
-
-
+const mongoose = require("mongoose");
 
 const getSummaryReport = async (req, res) => {
   try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
     const totalSalesData = await Bill.aggregate([
-      { $match: { user: req.user.id } },
+      { $match: { user: userId } }, 
       {
         $group: {
           _id: null,
@@ -15,32 +16,25 @@ const getSummaryReport = async (req, res) => {
         },
       },
     ]);
-    console.log("Total Sales Data:", totalSalesData);
 
     const totalSales = totalSalesData[0]?.totalSales || 0;
     const totalBills = totalSalesData[0]?.totalBills || 0;
 
-
-
     const totalProducts = await Product.countDocuments({
-      user: req.user.id,
+      user: userId, 
     });
-
-
 
     const lowStockProducts = await Product.find({
-      user: req.user.id,
+      user: userId, 
       quantity: { $lt: 10 },
-    });
-
-    const lowStockCount = lowStockProducts.length;
-
+    }).select("name quantity unit");
 
     res.status(200).json({
       totalSales,
       totalBills,
       totalProducts,
-      lowStockCount,
+      lowStockCount: lowStockProducts.length,
+      lowStockProducts,
     });
 
   } catch (error) {
@@ -51,8 +45,11 @@ const getSummaryReport = async (req, res) => {
 
 const getSalesReport = async (req, res) => {
   try {
-    const bills = await Bill.find({ user: req.user.id })
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
+    const bills = await Bill.find({ user: userId }) 
       .populate("items.product");
+
     let totalSales = 0;
     const totalTransactions = bills.length;
     const productMap = {};
@@ -70,6 +67,7 @@ const getSalesReport = async (req, res) => {
         productMap[productName] += item.quantity;
       }
     }
+
     const topProducts = Object.keys(productMap).map((name) => ({
       name,
       quantity: productMap[name],
@@ -77,12 +75,10 @@ const getSalesReport = async (req, res) => {
 
     topProducts.sort((a, b) => b.quantity - a.quantity);
 
-    const top5 = topProducts.slice(0, 5);
-
     res.status(200).json({
       totalSales,
       totalTransactions,
-      topProducts: top5,
+      topProducts: topProducts.slice(0, 5),
     });
 
   } catch (error) {
@@ -91,9 +87,12 @@ const getSalesReport = async (req, res) => {
   }
 };
 
+
 const getProfitReport = async (req, res) => {
   try {
-    const bills = await Bill.find({ user: req.user.id })
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
+    const bills = await Bill.find({ user: userId }) 
       .populate("items.product");
 
     let totalProfit = 0;
@@ -105,7 +104,6 @@ const getProfitReport = async (req, res) => {
         const quantity = item.quantity;
 
         const profit = (sellingPrice - purchasePrice) * quantity;
-
         totalProfit += profit;
       }
     }
@@ -119,10 +117,10 @@ const getProfitReport = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-const mongoose = require("mongoose");
 
 const getSalesTrend = async (req, res) => {
   try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
     const { filter } = req.query;
 
     let groupFormat = "%Y-%m-%d";
@@ -136,7 +134,7 @@ const getSalesTrend = async (req, res) => {
     const salesTrend = await Bill.aggregate([
       {
         $match: {
-          user: new mongoose.Types.ObjectId(req.user.id), 
+          user: userId, 
         },
       },
       {
@@ -155,7 +153,6 @@ const getSalesTrend = async (req, res) => {
       },
     ]);
 
-
     res.status(200).json(salesTrend);
 
   } catch (error) {
@@ -163,9 +160,10 @@ const getSalesTrend = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 module.exports = {
   getSummaryReport,
   getSalesReport,
   getProfitReport,
-    getSalesTrend,
+  getSalesTrend,
 };
