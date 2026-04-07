@@ -6,6 +6,8 @@ import {
   deleteProduct,
 } from "../../services/productService";
 import "./Products.css";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -125,6 +127,40 @@ function Products() {
     setQuantity("");
     setUnit("");
   };
+  const downloadExcel = () => {
+  if (!products || products.length === 0) {
+    alert("No products available");
+    return;
+  }
+
+  const data = products.map((p) => ({
+    Name: p.name,
+    Category: p.category,
+    "Selling Price": p.price,
+    "Cost Price": p.purchasePrice,
+    Quantity: p.quantity,
+    Unit: p.unit,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array",
+  });
+
+  const fileData = new Blob([excelBuffer], {
+    type:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(fileData, "products.xlsx");
+};
+
 
   return (
     <div className="products-container">
@@ -197,7 +233,9 @@ function Products() {
         <button type="submit">
           {editingId ? "Update Product" : "Add Product"}
         </button>
-
+        <button onClick={downloadExcel} type="button">
+          Export Excel
+        </button>
         {editingId && (
           <button type="button" onClick={resetForm}>
             Cancel

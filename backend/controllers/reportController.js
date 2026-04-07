@@ -77,12 +77,12 @@ const getSalesReport = async (req, res) => {
 
     topProducts.sort((a, b) => b.quantity - a.quantity);
 
-    const top3 = topProducts.slice(0, 3);
+    const top5 = topProducts.slice(0, 5);
 
     res.status(200).json({
       totalSales,
       totalTransactions,
-      topProducts: top3,
+      topProducts: top5,
     });
 
   } catch (error) {
