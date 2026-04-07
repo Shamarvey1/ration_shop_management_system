@@ -5,6 +5,8 @@ import {
   deleteCustomer,
 } from "../../services/customerService";
 import "./Customers.css";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -56,6 +58,36 @@ function Customers() {
   };
 
   const sortedCustomers = [...customers].sort((a, b) => b.debt - a.debt);
+  const downloadExcel = () => {
+  if (!customers || customers.length === 0) {
+    alert("No customers available");
+    return;
+  }
+
+  const data = customers.map((c) => ({
+    Name: c.name,
+    Phone: c.phone,
+    Address: c.address || "N/A",
+    Debt: c.debt || 0,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array",
+  });
+
+  const fileData = new Blob([excelBuffer], {
+    type:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(fileData, "customers.xlsx");
+};
 
   return (
     <div className="customers-container">
@@ -86,6 +118,9 @@ function Customers() {
         />
 
         <button type="submit">Add Customer</button>
+        <button onClick={downloadExcel}>
+            Export Excel
+        </button>
       </form>
 
       <div className="customer-list">
