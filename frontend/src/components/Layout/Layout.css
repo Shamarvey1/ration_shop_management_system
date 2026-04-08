@@ -1,0 +1,22 @@
+.layout-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.layout-main {
+  flex: 1;
+  padding: 24px;
+}
+
+.layout-header {
+  margin-bottom: 24px;
+}
+
+.layout-content {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  min-height: calc(100vh - 112px);
+}

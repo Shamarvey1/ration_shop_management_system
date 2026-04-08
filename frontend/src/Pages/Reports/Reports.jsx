@@ -195,19 +195,6 @@ function Reports() {
         </BarChart>
       </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <h3>Top Selling Products</h3>
-
-        {sales.topProducts.length > 0 ? (
-          sales.topProducts.map((p, index) => (
-            <p key={index}>
-              {p.name} — {p.quantity} units
-            </p>
-          ))
-        ) : (
-          <p>No sales data</p>
-        )}
-      </div>
     </div>
   );
 }

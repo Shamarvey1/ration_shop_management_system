@@ -53,34 +53,38 @@ function Billing() {
 
     return total;
   };
+const handleCreateBill = async (e) => {
+  e.preventDefault();
 
-  const handleCreateBill = async (e) => {
-    e.preventDefault();
+  if (!selectedCustomer) {
+    alert("Please select a customer");
+    return;
+  }
 
-    if (!selectedCustomer) {
-      alert("Please select a customer");
-      return;
-    }
+  if (items.length === 0) {
+    alert("Add at least one product");
+    return;
+  }
 
-    if (items.length === 0) {
-      alert("Add at least one product");
-      return;
-    }
+  const billData = {
+    customer: selectedCustomer,
+    items,
+    paidAmount: Number(paidAmount),
+  };
 
-    const billData = {
-      customer: selectedCustomer,
-      items,
-      paidAmount: Number(paidAmount),
-    };
-
-    await createBill(billData);
+  try {
+    await createBill(billData); 
 
     setItems([]);
     setPaidAmount("");
     setSelectedCustomer("");
 
     fetchData();
-  };
+
+  } catch (error) {
+    alert(error.message);
+  }
+};
 
   return (
     <div>

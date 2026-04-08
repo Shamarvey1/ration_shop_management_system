@@ -3,6 +3,7 @@ import {
   getSummaryReport,
   getProfitReport,
   getSalesTrend,
+  getSalesReport,
 } from "../../services/reportService";
 import { getBills } from "../../services/billingService";
 
@@ -20,6 +21,7 @@ function Dashboard() {
   const [profit, setProfit] = useState(null);
   const [bills, setBills] = useState([]);
   const [trend, setTrend] = useState([]);
+  const [sales, setSales] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -31,17 +33,19 @@ function Dashboard() {
       const profitData = await getProfitReport();
       const billData = await getBills();
       const trendData = await getSalesTrend("daily");
+      const salesData = await getSalesReport();
 
       setSummary(summaryData || {});
       setProfit(profitData || {});
       setBills(billData || []);
       setTrend(trendData || []);
+      setSales(salesData || null);
     } catch (err) {
       console.error("Dashboard Error:", err);
     }
   };
 
-  if (!summary || !profit) return <p>Loading...</p>;
+  if (!summary || !profit || !sales) return <p>Loading...</p>;
 
   const recentBills = bills.slice(0, 5);
 
@@ -53,8 +57,6 @@ function Dashboard() {
   return (
     <div style={{ padding: "20px" }}>
       <h2>Dashboard</h2>
-
-      {/* 🟢 SUMMARY CARDS */}
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
         <div style={cardStyle}>
           <h4>Total Sales</h4>
@@ -77,7 +79,6 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 🔵 SALES TREND */}
       <div style={{ marginTop: "30px" }}>
         <h3>Sales Trend</h3>
 
@@ -90,7 +91,7 @@ function Dashboard() {
         </LineChart>
       </div>
 
-      {/* 🟡 RECENT BILLS */}
+
       <div style={{ marginTop: "30px" }}>
         <h3>Recent Transactions</h3>
 
@@ -108,7 +109,20 @@ function Dashboard() {
         )}
       </div>
 
-      {/* 🔴 LOW STOCK PRODUCTS */}
+      <div style={{ marginTop: "20px" }}>
+        <h3>Top Selling Products</h3>
+
+        {sales.topProducts.length > 0 ? (
+          sales.topProducts.map((p, index) => (
+            <p key={index}>
+              {p.name} — {p.quantity} units
+            </p>
+          ))
+        ) : (
+          <p>No sales data</p>
+        )}
+      </div>
+
       <div style={{ marginTop: "30px" }}>
         <h3>Low Stock Products</h3>
 
@@ -119,7 +133,7 @@ function Dashboard() {
             </p>
           ))
         ) : (
-          <p>No low stock items 🎉</p>
+          <p>No low stock items </p>
         )}
       </div>
     </div>
