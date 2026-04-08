@@ -14,10 +14,7 @@ function Login() {
     const { status, data } = await loginUser({ email, password });
 
     if (status === 200) {
-      // ✅ Store token
       localStorage.setItem("token", data.token);
-
-      // ✅ Redirect to dashboard
       navigate("/dashboard");
     } else {
       alert(data.message || "Login failed");
