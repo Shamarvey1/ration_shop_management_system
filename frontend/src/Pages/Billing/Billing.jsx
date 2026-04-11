@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { createBill, getBills } from "../../services/billingService";
+import {
+  createBill,
+  getBills,
+  getFilteredBills
+} from "../../services/billingService";
 import { getProducts } from "../../services/productService";
 import { getCustomers } from "../../services/customerService";
 
@@ -11,6 +15,10 @@ function Billing() {
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [items, setItems] = useState([]);
   const [paidAmount, setPaidAmount] = useState("");
+
+  const [filterCustomer, setFilterCustomer] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -29,16 +37,19 @@ function Billing() {
     setItems([...items, { product: "", quantity: 1 }]);
   };
 
+
   const removeItem = (index) => {
     const updated = items.filter((_, i) => i !== index);
     setItems(updated);
   };
+
 
   const updateItem = (index, field, value) => {
     const updated = [...items];
     updated[index][field] = value;
     setItems(updated);
   };
+
 
   const calculateTotal = () => {
     let total = 0;
@@ -52,46 +63,51 @@ function Billing() {
 
     return total;
   };
-const handleCreateBill = async (e) => {
-  e.preventDefault();
 
-  if (!selectedCustomer) {
-    alert("Please select a customer");
-    return;
-  }
+  const handleCreateBill = async (e) => {
+    e.preventDefault();
 
-  if (items.length === 0) {
-    alert("Add at least one product");
-    return;
-  }
+    if (!selectedCustomer) {
+      alert("Please select a customer");
+      return;
+    }
 
-  const billData = {
-    customer: selectedCustomer,
-    items,
-    paidAmount: Number(paidAmount),
+    if (items.length === 0) {
+      alert("Add at least one product");
+      return;
+    }
+
+    const billData = {
+      customer: selectedCustomer,
+      items,
+      paidAmount: Number(paidAmount),
+    };
+
+    try {
+      await createBill(billData);
+
+      setItems([]);
+      setPaidAmount("");
+      setSelectedCustomer("");
+
+      fetchData();
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
-  try {
-    await createBill(billData); 
+  const handleFilter = async () => {
+    console.log("Filter:", filterCustomer, filterDate);
 
-    setItems([]);
-    setPaidAmount("");
-    setSelectedCustomer("");
+    const data = await getFilteredBills(filterCustomer, filterDate);
+    setBills(data);
+  };
 
-    fetchData();
-
-  } catch (error) {
-    alert(error.message);
-  }
-};
-const handleFilter = async () => {
-  const data = await getFilteredBills(filterCustomer, filterDate);
-  setBills(data); // ✅ correct place
-};
   return (
     <div>
       <h2>Billing</h2>
 
+      {/* 🔹 CREATE BILL FORM */}
       <form onSubmit={handleCreateBill}>
         <select
           value={selectedCustomer}
@@ -139,9 +155,7 @@ const handleFilter = async () => {
                 }
               />
 
-              <span style={{ marginLeft: "10px" }}>
-                ₹{subtotal}
-              </span>
+              <span style={{ marginLeft: "10px" }}>₹{subtotal}</span>
 
               <button
                 type="button"
@@ -165,7 +179,6 @@ const handleFilter = async () => {
           onChange={(e) => setPaidAmount(e.target.value)}
         />
 
-
         <p><strong>Total:</strong> ₹{calculateTotal()}</p>
         <p><strong>Paid:</strong> ₹{paidAmount || 0}</p>
         <p>
@@ -176,8 +189,40 @@ const handleFilter = async () => {
         <button type="submit">Create Bill</button>
       </form>
 
-      {/* Bills */}
+      <div style={{ margin: "20px 0", display: "flex", gap: "10px" }}>
+        <select
+          value={filterCustomer}
+          onChange={(e) => setFilterCustomer(e.target.value)}
+        >
+          <option value="">Select Customer</option>
+          {customers.map((c) => (
+            <option key={c._id} value={c._id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+        />
+
+        <button onClick={handleFilter}>Search</button>
+
+        <button
+          onClick={() => {
+            setFilterCustomer("");
+            setFilterDate("");
+            fetchData();
+          }}
+        >
+          Reset
+        </button>
+      </div>
+
       <h3>All Bills</h3>
+
       {bills.map((bill) => (
         <div
           key={bill._id}
@@ -187,7 +232,10 @@ const handleFilter = async () => {
             padding: "10px",
           }}
         >
-          <p><strong>Customer:</strong>{" "}{bill.customer?.name || bill.customerName}</p>
+          <p>
+            <strong>Customer:</strong>{" "}
+            {bill.customer?.name || bill.customerName}
+          </p>
 
           {bill.items.map((item, i) => (
             <div key={i}>
@@ -200,9 +248,7 @@ const handleFilter = async () => {
           <p>Remaining: ₹{bill.remainingAmount}</p>
         </div>
       ))}
-      
     </div>
-    
   );
 }
 

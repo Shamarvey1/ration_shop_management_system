@@ -2,7 +2,6 @@ const Bill = require("../models/Bill");
 const Product = require("../models/Product");
 const Customer = require("../models/Customer");
 
-
 const createBill = async (req, res) => {
   try {
     const { customer, items, paidAmount } = req.body;
@@ -13,7 +12,6 @@ const createBill = async (req, res) => {
       });
     }
 
-
     const foundCustomer = await Customer.findById(customer);
     if (!foundCustomer) {
       return res.status(404).json({
@@ -23,7 +21,6 @@ const createBill = async (req, res) => {
 
     let totalAmount = 0;
     const processedItems = [];
-
 
     for (let item of items) {
       const product = await Product.findById(item.product);
@@ -66,10 +63,9 @@ const createBill = async (req, res) => {
 
     const remainingAmount = totalAmount - paid;
 
-
     const bill = await Bill.create({
       customer,
-      customerName: foundCustomer.name, // 🔥 NEW (important)
+      customerName: foundCustomer.name,
       items: processedItems,
       totalAmount,
       paidAmount: paid,
@@ -92,14 +88,39 @@ const createBill = async (req, res) => {
 
 
 
+
 const getBills = async (req, res) => {
   try {
-    const bills = await Bill.find({ user: req.user.id })
+    const { customer, date } = req.query;
+
+    // 🔥 BASE QUERY (important)
+    let query = { user: req.user.id };
+
+    // 🔹 FILTER BY CUSTOMER
+    if (customer) {
+      query.customer = customer;
+    }
+
+    
+    if (date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0); 
+
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999); 
+
+      query.createdAt = {
+        $gte: start,
+        $lte: end,
+      };
+    }
+    const bills = await Bill.find(query)
       .populate("customer")
       .populate("items.product")
       .sort({ createdAt: -1 });
 
     res.status(200).json(bills);
+
   } catch (error) {
     console.error("Get Bills Error:", error);
     res.status(500).json({ message: "Server error" });

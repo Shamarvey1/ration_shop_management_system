@@ -43,3 +43,32 @@ export const getBills = async () => {
   }
 };
 
+export const getFilteredBills = async (customerId, date) => {
+  try {
+    let url = `${API_URL}/bills?`;
+    if (customerId) {
+      url += `customer=${customerId}&`;
+    }
+    if (date) {
+      url += `date=${date}`;
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to fetch filtered bills");
+    }
+
+    return data;
+
+  } catch (error) {
+    console.error("Filtered Bills Error:", error.message);
+    return [];
+  }
+};
