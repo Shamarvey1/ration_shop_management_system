@@ -1,4 +1,5 @@
 const Customer = require("../models/Customer");
+const Bill = require("../models/Bill");
 
 const addCustomer = async(req,res)=>{
     try{
@@ -30,6 +31,7 @@ const getCustomers = async(req,res)=>{
 }
 
 
+
 const deleteCustomer = async (req, res) => {
   try {
     const customer = await Customer.findById(req.params.id);
@@ -50,8 +52,40 @@ const deleteCustomer = async (req, res) => {
 };
 
 
+const getCustomerDetails = async (req, res) => {
+  try {
+    const customerId = req.params.id;
+
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+    const bills = await Bill.find({ customer: customerId })
+      .populate("items.product")
+      .sort({ createdAt: -1 });
+    const totalPurchase = bills.reduce(
+      (sum, bill) => sum + bill.paidAmount,
+      0
+    );
+
+    res.status(200).json({
+      customer,
+      totalPurchase,
+      totalBills: bills.length,
+      bills, // 🔥 IMPORTANT (for history)
+    });
+
+  } catch (error) {
+    console.error("Customer Details Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 module.exports = {
   addCustomer,
   getCustomers,
   deleteCustomer,
+  getCustomerDetails
 };

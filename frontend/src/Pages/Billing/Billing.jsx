@@ -11,7 +11,6 @@ function Billing() {
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [items, setItems] = useState([]);
   const [paidAmount, setPaidAmount] = useState("");
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -85,7 +84,10 @@ const handleCreateBill = async (e) => {
     alert(error.message);
   }
 };
-
+const handleFilter = async () => {
+  const data = await getFilteredBills(filterCustomer, filterDate);
+  setBills(data); // ✅ correct place
+};
   return (
     <div>
       <h2>Billing</h2>
@@ -198,7 +200,9 @@ const handleCreateBill = async (e) => {
           <p>Remaining: ₹{bill.remainingAmount}</p>
         </div>
       ))}
+      
     </div>
+    
   );
 }
 

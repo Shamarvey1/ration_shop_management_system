@@ -3,12 +3,28 @@ import Sidebar from "../Sidebar/Sidebar";
 
 function Layout() {
   return (
-    <div style={{ display: "flex" }}>
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
       <Sidebar />
-      <div style={{ marginLeft: "20px" }}>
-        <h2>Navbar</h2>
-        <Outlet />
-      </div>
+      <main
+        style={{
+          flex: 1,
+          height: "100vh",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 }

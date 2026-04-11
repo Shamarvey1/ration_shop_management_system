@@ -42,3 +42,4 @@ export const getBills = async () => {
     return [];
   }
 };
+

@@ -34,3 +34,13 @@ export const deleteCustomer = async (id) => {
 
   return res.json();
 };
+
+export const getCustomerDetails = async (id) => {
+  const res = await fetch(`${API_URL}/customers/${id}/details`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  return res.json();
+};

@@ -1,0 +1,215 @@
+.dashboard-page {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 14px 14px 10px;
+  height: calc(100vh - 14px);
+  background: #f4f7fb;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dashboard-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.dashboard-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.dashboard-note {
+  margin: 0;
+  color: #475569;
+  max-width: 720px;
+}
+
+.dashboard-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.summary-card {
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 20px;
+  padding: 16px;
+  min-height: 90px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+}
+
+.summary-card-title {
+  margin: 0 0 12px;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.summary-card-value {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.dashboard-main-grid,
+.dashboard-info-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.dashboard-main-grid {
+  grid-template-columns: 1.5fr 1fr;
+}
+
+.dashboard-info-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.dashboard-panel {
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 20px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-label {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.panel-title {
+  margin: 4px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.panel-pill-group {
+  display: flex;
+  gap: 10px;
+}
+
+.pill-button,
+.action-button,
+.inventory-action {
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pill-button {
+  background: #e2f8ec;
+  color: #166534;
+}
+
+.pill-button.active,
+.action-button,
+.inventory-action {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+.chart-panel-body {
+  min-height: 180px;
+  max-height: 190px;
+}
+
+.product-list,
+.transaction-list,
+.lowstock-list {
+  display: grid;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.product-list.three-visible {
+  max-height: 240px;
+}
+
+.transaction-list.five-visible,
+.lowstock-list.five-visible {
+  max-height: 330px;
+}
+
+.product-item,
+.transaction-item,
+.lowstock-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: #f8fafc;
+}
+
+.product-name,
+.transaction-title,
+.inventory-name {
+  margin: 0;
+  font-weight: 700;
+  color: #111827;
+}
+
+.product-meta,
+.transaction-subtitle,
+.inventory-meta {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.product-value,
+.transaction-amount {
+  font-weight: 700;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.empty-message {
+  margin: 0;
+  color: #64748b;
+}
+
+.view-link {
+  color: #22c55e;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+@media (max-width: 1080px) {
+  .dashboard-main-grid,
+  .dashboard-info-grid,
+  .dashboard-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
