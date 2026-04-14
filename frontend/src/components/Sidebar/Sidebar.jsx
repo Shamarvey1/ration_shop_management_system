@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 function Sidebar() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
 
   const handleLogout = () => {
     localStorage.removeItem("token");
