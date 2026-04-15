@@ -6,6 +6,8 @@ import {
 } from "../../services/billingService";
 import { getProducts } from "../../services/productService";
 import { getCustomers } from "../../services/customerService";
+import "./Billing.css";
+import { ShoppingCart } from "lucide-react";
 
 function Billing() {
   const [products, setProducts] = useState([]);
@@ -15,6 +17,7 @@ function Billing() {
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [items, setItems] = useState([]);
   const [paidAmount, setPaidAmount] = useState("");
+  const [showAddProductWarning, setShowAddProductWarning] = useState(false);
 
   const [filterCustomer, setFilterCustomer] = useState("");
   const [filterDate, setFilterDate] = useState("");
@@ -34,22 +37,20 @@ function Billing() {
   };
 
   const addItem = () => {
+    setShowAddProductWarning(false);
     setItems([...items, { product: "", quantity: 1 }]);
   };
-
 
   const removeItem = (index) => {
     const updated = items.filter((_, i) => i !== index);
     setItems(updated);
   };
 
-
   const updateItem = (index, field, value) => {
     const updated = [...items];
     updated[index][field] = value;
     setItems(updated);
   };
-
 
   const calculateTotal = () => {
     let total = 0;
@@ -77,10 +78,16 @@ function Billing() {
       return;
     }
 
+    const numericPaidAmount = Number(paidAmount);
+    if (Number.isNaN(numericPaidAmount) || numericPaidAmount < 0) {
+      alert("Paid Amount must be 0 or greater");
+      return;
+    }
+
     const billData = {
       customer: selectedCustomer,
       items,
-      paidAmount: Number(paidAmount),
+      paidAmount: numericPaidAmount,
     };
 
     try {
@@ -97,157 +104,214 @@ function Billing() {
   };
 
   const handleFilter = async () => {
-    console.log("Filter:", filterCustomer, filterDate);
-
     const data = await getFilteredBills(filterCustomer, filterDate);
     setBills(data);
   };
 
   return (
-    <div>
-      <h2>Billing</h2>
-
-      {/* 🔹 CREATE BILL FORM */}
-      <form onSubmit={handleCreateBill}>
-        <select
-          value={selectedCustomer}
-          onChange={(e) => setSelectedCustomer(e.target.value)}
-          required
-        >
-          <option value="">Select Customer</option>
-          {customers.map((c) => (
-            <option key={c._id} value={c._id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-
-        {items.map((item, index) => {
-          const product = products.find((p) => p._id === item.product);
-          const subtotal = product ? product.price * item.quantity : 0;
-
-          return (
-            <div key={index} style={{ marginBottom: "10px" }}>
-              <select
-                value={item.product}
-                onChange={(e) =>
-                  updateItem(index, "product", e.target.value)
-                }
-              >
-                <option value="">Select Product</option>
-                {products.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name} (₹{p.price})
-                  </option>
-                ))}
-              </select>
-
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                onChange={(e) =>
-                  updateItem(
-                    index,
-                    "quantity",
-                    Math.max(1, Number(e.target.value))
-                  )
-                }
-              />
-
-              <span style={{ marginLeft: "10px" }}>₹{subtotal}</span>
-
-              <button
-                type="button"
-                onClick={() => removeItem(index)}
-                style={{ marginLeft: "10px" }}
-              >
-                ❌ Remove
-              </button>
-            </div>
-          );
-        })}
-
-        <button type="button" onClick={addItem}>
-          Add Product
-        </button>
-
-        <input
-          type="number"
-          placeholder="Paid Amount"
-          value={paidAmount}
-          onChange={(e) => setPaidAmount(e.target.value)}
-        />
-
-        <p><strong>Total:</strong> ₹{calculateTotal()}</p>
-        <p><strong>Paid:</strong> ₹{paidAmount || 0}</p>
-        <p>
-          <strong>Remaining:</strong> ₹
-          {calculateTotal() - (paidAmount || 0)}
-        </p>
-
-        <button type="submit">Create Bill</button>
-      </form>
-
-      <div style={{ margin: "20px 0", display: "flex", gap: "10px" }}>
-        <select
-          value={filterCustomer}
-          onChange={(e) => setFilterCustomer(e.target.value)}
-        >
-          <option value="">Select Customer</option>
-          {customers.map((c) => (
-            <option key={c._id} value={c._id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-
-        <input
-          type="date"
-          value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-        />
-
-        <button onClick={handleFilter}>Search</button>
-
-        <button
-          onClick={() => {
-            setFilterCustomer("");
-            setFilterDate("");
-            fetchData();
-          }}
-        >
-          Reset
-        </button>
+    <div className="billing-page">
+      <div className="billing-header">
+        <div>
+          <h2 className="billing-title">Billing</h2>
+          <p className="billing-description">
+            Create bills, manage payments, and review all invoices in one place.
+          </p>
+        </div>
       </div>
 
-      <h3>All Bills</h3>
+      <div className="billing-panels">
+        <section className="billing-section billing-form-section">
+          <h3 className="billing-section-title">Create Bill</h3>
 
-      {bills.map((bill) => (
-        <div
-          key={bill._id}
-          style={{
-            border: "1px solid gray",
-            margin: "10px",
-            padding: "10px",
-          }}
-        >
-          <p>
-            <strong>Customer:</strong>{" "}
-            {bill.customer?.name || bill.customerName}
-          </p>
+          <form className="billing-form" onSubmit={handleCreateBill}>
+            <select
+              className={selectedCustomer ? "billing-customer-select-selected" : ""}
+              value={selectedCustomer}
+              onChange={(e) => setSelectedCustomer(e.target.value)}
+              required
+            >
+              <option value="">Select Customer</option>
+              {customers.map((c) => ( 
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
 
-          {bill.items.map((item, i) => (
-            <div key={i}>
-              {item.product?.name} — {item.quantity} × ₹{item.price}
+            <div className="billing-products-scroll">
+              {items.length === 0 && (
+                <p className="billing-products-empty">
+                  <span className="billing-products-empty-icon" aria-hidden="true">
+                    <ShoppingCart size={16} strokeWidth={2.4} />
+                  </span>
+                  <span>No products added yet. Click Add Product to start building this bill.</span>
+                </p>
+              )}
+
+              {items.map((item, index) => {
+                const product = products.find((p) => p._id === item.product);
+                const subtotal = product ? product.price * item.quantity : 0;
+
+                return (
+                  <div key={index} className="billing-item-row">
+                    <select
+                      value={item.product}
+                      onChange={(e) =>
+                        updateItem(index, "product", e.target.value)
+                      }
+                    >
+                      <option value="">Select Product</option>
+                      {products.map((p) => (
+                        <option key={p._id} value={p._id}>
+                          {p.name} (₹{p.price})
+                        </option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        updateItem(
+                          index,
+                          "quantity",
+                          Math.max(1, Number(e.target.value))
+                        )
+                      }
+                    />
+
+                    <span className="billing-subtotal">₹{subtotal}</span>
+
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index)}
+                      className="billing-remove-btn"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })}
             </div>
-          ))}
 
-          <p>Total: ₹{bill.totalAmount}</p>
-          <p>Paid: ₹{bill.paidAmount}</p>
-          <p>Remaining: ₹{bill.remainingAmount}</p>
-        </div>
-      ))}
+            <button
+              type="button"
+              onClick={addItem}
+              className={`billing-add-product-btn ${showAddProductWarning ? "billing-add-product-btn-warning" : ""}`}
+            >
+              Add Product
+            </button>
+
+            <input
+              className={`billing-paid-amount-input ${items.length > 0 ? "billing-paid-input-active" : ""}`}
+              type="number"
+              min="0"
+              required
+              placeholder="Paid Amount"
+              value={paidAmount}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "") {
+                  setPaidAmount("");
+                  return;
+                }
+
+                if (items.length === 0) {
+                  if (!showAddProductWarning) {
+                    alert("Please add at least one product before entering Paid Amount.");
+                  }
+                  setShowAddProductWarning(true);
+                  setPaidAmount("");
+                  return;
+                }
+
+                setShowAddProductWarning(false);
+
+                setPaidAmount(String(Math.max(0, Number(value))));
+              }}
+            />
+
+            <div className="billing-summary-row">
+              <p className="billing-summary-item">
+                <span className="billing-summary-label">Total</span>
+                <span className="billing-summary-value">₹{calculateTotal()}</span>
+              </p>
+              <p className="billing-summary-item">
+                <span className="billing-summary-label">Paid</span>
+                <span className="billing-summary-value">₹{paidAmount || 0}</span>
+              </p>
+              <p className="billing-summary-item billing-summary-remaining">
+                <span className="billing-summary-label">Remaining</span>
+                <span className="billing-summary-value">
+                  ₹{calculateTotal() - (paidAmount || 0)}
+                </span>
+              </p>
+            </div>
+
+            <button type="submit" className="billing-create-btn">Create Bill</button>
+          </form>
+        </section>
+
+        <section className="billing-section billing-list-section">
+          <h3 className="billing-section-title">All Bills</h3>
+
+          <div className="billing-filter-bar">
+            <select
+              value={filterCustomer}
+              onChange={(e) => setFilterCustomer(e.target.value)}
+            >
+              <option value="">Select Customer</option>
+              {customers.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+            />
+
+            <button onClick={handleFilter}>Search</button>
+
+            <button
+              onClick={() => {
+                setFilterCustomer("");
+                setFilterDate("");
+                fetchData();
+              }}
+            >
+              Reset
+            </button>
+          </div>
+
+          <div className="billing-list">
+            {bills.map((bill) => (
+              <div key={bill._id} className="billing-card">
+                <p>
+                  <strong>Customer:</strong>{" "}
+                  {bill.customer?.name || bill.customerName}
+                </p>
+
+                {bill.items.map((item, i) => (
+                  <div key={i}>
+                    {item.product?.name} — {item.quantity} × ₹{item.price}
+                  </div>
+                ))}
+
+                <p>Total: ₹{bill.totalAmount}</p>
+                <p>Paid: ₹{bill.paidAmount}</p>
+                <p>
+                  Remaining: <span className="billing-remaining-value">₹{bill.remainingAmount}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
