@@ -44,3 +44,27 @@ export const getCustomerDetails = async (id) => {
 
   return res.json();
 };
+export const searchCustomers = async (query) => {
+  try {
+    const encodedQuery = encodeURIComponent(query.trim());
+    const res = await fetch(
+      `${API_URL}/customers?search=${encodedQuery}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Search Customer Error:", error);
+    return [];
+  }
+};

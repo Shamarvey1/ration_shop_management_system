@@ -5,21 +5,31 @@ import {
   getFilteredBills
 } from "../../services/billingService";
 import { getProducts } from "../../services/productService";
-import { getCustomers } from "../../services/customerService";
+import { searchCustomers } from "../../services/customerService";
 import "./Billing.css";
 import { ShoppingCart } from "lucide-react";
 
 function Billing() {
   const [products, setProducts] = useState([]);
-  const [customers, setCustomers] = useState([]);
   const [bills, setBills] = useState([]);
 
   const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [showCustomerWarning, setShowCustomerWarning] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [showCustomerResults, setShowCustomerResults] = useState(false);
+  const [customerResults, setCustomerResults] = useState([]);
+  const [isCustomerSearchLoading, setIsCustomerSearchLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [paidAmount, setPaidAmount] = useState("");
+  const [showPaidAmountWarning, setShowPaidAmountWarning] = useState(false);
   const [showAddProductWarning, setShowAddProductWarning] = useState(false);
+  const [showAddProductButtonWarning, setShowAddProductButtonWarning] = useState(false);
 
   const [filterCustomer, setFilterCustomer] = useState("");
+  const [filterCustomerSearch, setFilterCustomerSearch] = useState("");
+  const [showFilterCustomerResults, setShowFilterCustomerResults] = useState(false);
+  const [filterCustomerResults, setFilterCustomerResults] = useState([]);
+  const [isFilterCustomerSearchLoading, setIsFilterCustomerSearchLoading] = useState(false);
   const [filterDate, setFilterDate] = useState("");
 
   useEffect(() => {
@@ -28,16 +38,15 @@ function Billing() {
 
   const fetchData = async () => {
     const prod = await getProducts();
-    const cust = await getCustomers();
     const billData = await getBills();
 
     setProducts(prod);
-    setCustomers(cust);
     setBills(billData);
   };
 
   const addItem = () => {
     setShowAddProductWarning(false);
+    setShowAddProductButtonWarning(false);
     setItems([...items, { product: "", quantity: 1 }]);
   };
 
@@ -50,6 +59,11 @@ function Billing() {
     const updated = [...items];
     updated[index][field] = value;
     setItems(updated);
+
+    if (field === "product" && value) {
+      setShowAddProductWarning(false);
+      setShowAddProductButtonWarning(false);
+    }
   };
 
   const calculateTotal = () => {
@@ -65,24 +79,119 @@ function Billing() {
     return total;
   };
 
+  const customerSearchQuery = customerSearch.trim();
+  const filterCustomerSearchQuery = filterCustomerSearch.trim();
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (!customerSearchQuery) {
+      setCustomerResults([]);
+      setIsCustomerSearchLoading(false);
+      return;
+    }
+
+    const timerId = setTimeout(async () => {
+      setIsCustomerSearchLoading(true);
+      const data = await searchCustomers(customerSearchQuery);
+
+      if (!isCancelled) {
+        setCustomerResults(Array.isArray(data) ? data : []);
+        setIsCustomerSearchLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timerId);
+    };
+  }, [customerSearchQuery]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (!filterCustomerSearchQuery) {
+      setFilterCustomerResults([]);
+      setIsFilterCustomerSearchLoading(false);
+      return;
+    }
+
+    const timerId = setTimeout(async () => {
+      setIsFilterCustomerSearchLoading(true);
+      const data = await searchCustomers(filterCustomerSearchQuery);
+
+      if (!isCancelled) {
+        setFilterCustomerResults(Array.isArray(data) ? data : []);
+        setIsFilterCustomerSearchLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timerId);
+    };
+  }, [filterCustomerSearchQuery]);
+
+  const handleCustomerPick = (customer) => {
+    setSelectedCustomer(customer._id);
+    setShowCustomerWarning(false);
+    setCustomerSearch(`${customer.name} (${customer.phone || "No phone"})`);
+    setShowCustomerResults(false);
+  };
+
+  const handleFilterCustomerPick = (customer) => {
+    setFilterCustomer(customer._id);
+    setFilterCustomerSearch(`${customer.name} (${customer.phone || "No phone"})`);
+    setShowFilterCustomerResults(false);
+  };
+
   const handleCreateBill = async (e) => {
     e.preventDefault();
 
     if (!selectedCustomer) {
+      setShowCustomerWarning(true);
+      setShowCustomerResults(true);
       alert("Please select a customer");
       return;
     }
 
-    if (items.length === 0) {
-      alert("Add at least one product");
+    const hasProductRows = items.length > 0;
+    const hasSelectedProduct = items.some((item) => item.product);
+
+    if (!hasProductRows) {
+      setShowPaidAmountWarning(false);
+      setShowAddProductWarning(true);
+      setShowAddProductButtonWarning(true);
+      alert("Please add at least one product row");
+      return;
+    }
+
+    if (!hasSelectedProduct) {
+      setShowPaidAmountWarning(false);
+      setShowAddProductWarning(true);
+      setShowAddProductButtonWarning(false);
+      alert("Please select at least one product");
+      return;
+    }
+
+    setShowAddProductWarning(false);
+    setShowAddProductButtonWarning(false);
+
+    if (paidAmount.trim() === "") {
+      setShowAddProductWarning(false);
+      setShowPaidAmountWarning(true);
+      alert("Please enter Paid Amount");
       return;
     }
 
     const numericPaidAmount = Number(paidAmount);
     if (Number.isNaN(numericPaidAmount) || numericPaidAmount < 0) {
+      setShowPaidAmountWarning(true);
       alert("Paid Amount must be 0 or greater");
       return;
     }
+
+    setShowPaidAmountWarning(false);
 
     const billData = {
       customer: selectedCustomer,
@@ -95,7 +204,13 @@ function Billing() {
 
       setItems([]);
       setPaidAmount("");
+      setShowPaidAmountWarning(false);
+      setShowAddProductWarning(false);
+      setShowAddProductButtonWarning(false);
       setSelectedCustomer("");
+      setShowCustomerWarning(false);
+      setCustomerSearch("");
+      setCustomerResults([]);
 
       fetchData();
     } catch (error) {
@@ -123,22 +238,52 @@ function Billing() {
         <section className="billing-section billing-form-section">
           <h3 className="billing-section-title">Create Bill</h3>
 
-          <form className="billing-form" onSubmit={handleCreateBill}>
-            <select
-              className={selectedCustomer ? "billing-customer-select-selected" : ""}
-              value={selectedCustomer}
-              onChange={(e) => setSelectedCustomer(e.target.value)}
-              required
-            >
-              <option value="">Select Customer</option>
-              {customers.map((c) => ( 
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+          <form className="billing-form" onSubmit={handleCreateBill} noValidate>
+            <div className="billing-customer-search">
+              <input
+                className={`billing-customer-search-input ${selectedCustomer ? "billing-customer-select-selected" : ""} ${showCustomerWarning ? "billing-customer-search-warning" : ""}`}
+                type="text"
+                placeholder="Search Customer by name or phone"
+                value={customerSearch}
+                onChange={(e) => {
+                  setCustomerSearch(e.target.value);
+                  setSelectedCustomer("");
+                  setShowCustomerWarning(false);
+                  setShowCustomerResults(true);
+                }}
+                onFocus={() => {
+                  setShowCustomerWarning(false);
+                  setShowCustomerResults(true);
+                }}
+                onBlur={() => {
+                  setTimeout(() => setShowCustomerResults(false), 150);
+                }}
+              />
 
-            <div className="billing-products-scroll">
+              {showCustomerResults && customerSearchQuery && (
+                <div className="billing-customer-results" role="listbox">
+                  {isCustomerSearchLoading ? (
+                    <p className="billing-customer-result-empty">Searching...</p>
+                  ) : customerResults.length > 0 ? (
+                    customerResults.map((customer) => (
+                      <button
+                        key={customer._id}
+                        type="button"
+                        className="billing-customer-result-item"
+                        onMouseDown={() => handleCustomerPick(customer)}
+                      >
+                        <span className="billing-customer-result-name">{customer.name}</span>
+                        <span className="billing-customer-result-phone">{customer.phone || "No phone"}</span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="billing-customer-result-empty">No customer found</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className={`billing-products-scroll ${showAddProductButtonWarning ? "billing-products-scroll-warning" : ""}`}>
               {items.length === 0 && (
                 <p className="billing-products-empty">
                   <span className="billing-products-empty-icon" aria-hidden="true">
@@ -155,6 +300,7 @@ function Billing() {
                 return (
                   <div key={index} className="billing-item-row">
                     <select
+                      className={showAddProductWarning && !item.product ? "billing-product-select-warning" : ""}
                       value={item.product}
                       onChange={(e) =>
                         updateItem(index, "product", e.target.value)
@@ -198,13 +344,13 @@ function Billing() {
             <button
               type="button"
               onClick={addItem}
-              className={`billing-add-product-btn ${showAddProductWarning ? "billing-add-product-btn-warning" : ""}`}
+              className={`billing-add-product-btn ${showAddProductButtonWarning ? "billing-add-product-btn-warning" : ""}`}
             >
               Add Product
             </button>
 
             <input
-              className={`billing-paid-amount-input ${items.length > 0 ? "billing-paid-input-active" : ""}`}
+              className={`billing-paid-amount-input ${items.length > 0 && !showPaidAmountWarning ? "billing-paid-input-active" : ""} ${showPaidAmountWarning ? "billing-paid-amount-warning" : ""}`}
               type="number"
               min="0"
               required
@@ -217,16 +363,31 @@ function Billing() {
                   return;
                 }
 
+                setShowPaidAmountWarning(false);
+
                 if (items.length === 0) {
                   if (!showAddProductWarning) {
                     alert("Please add at least one product before entering Paid Amount.");
                   }
                   setShowAddProductWarning(true);
+                  setShowAddProductButtonWarning(true);
+                  setPaidAmount("");
+                  return;
+                }
+
+                const hasSelectedProduct = items.some((item) => item.product);
+                if (!hasSelectedProduct) {
+                  if (!showAddProductWarning) {
+                    alert("Please select at least one product before entering Paid Amount.");
+                  }
+                  setShowAddProductWarning(true);
+                  setShowAddProductButtonWarning(false);
                   setPaidAmount("");
                   return;
                 }
 
                 setShowAddProductWarning(false);
+                setShowAddProductButtonWarning(false);
 
                 setPaidAmount(String(Math.max(0, Number(value))));
               }}
@@ -257,17 +418,45 @@ function Billing() {
           <h3 className="billing-section-title">All Bills</h3>
 
           <div className="billing-filter-bar">
-            <select
-              value={filterCustomer}
-              onChange={(e) => setFilterCustomer(e.target.value)}
-            >
-              <option value="">Select Customer</option>
-              {customers.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className="billing-customer-search billing-filter-customer-search">
+              <input
+                className="billing-customer-search-input"
+                type="text"
+                placeholder="customer by name or phone"
+                value={filterCustomerSearch}
+                onChange={(e) => {
+                  setFilterCustomerSearch(e.target.value);
+                  setFilterCustomer("");
+                  setShowFilterCustomerResults(true);
+                }}
+                onFocus={() => setShowFilterCustomerResults(true)}
+                onBlur={() => {
+                  setTimeout(() => setShowFilterCustomerResults(false), 150);
+                }}
+              />
+
+              {showFilterCustomerResults && filterCustomerSearchQuery && (
+                <div className="billing-customer-results" role="listbox">
+                  {isFilterCustomerSearchLoading ? (
+                    <p className="billing-customer-result-empty">Searching...</p>
+                  ) : filterCustomerResults.length > 0 ? (
+                    filterCustomerResults.map((customer) => (
+                      <button
+                        key={customer._id}
+                        type="button"
+                        className="billing-customer-result-item"
+                        onMouseDown={() => handleFilterCustomerPick(customer)}
+                      >
+                        <span className="billing-customer-result-name">{customer.name}</span>
+                        <span className="billing-customer-result-phone">{customer.phone || "No phone"}</span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="billing-customer-result-empty">No customer found</p>
+                  )}
+                </div>
+              )}
+            </div>
 
             <input
               type="date"
@@ -280,6 +469,9 @@ function Billing() {
             <button
               onClick={() => {
                 setFilterCustomer("");
+                setFilterCustomerSearch("");
+                setFilterCustomerResults([]);
+                setShowFilterCustomerResults(false);
                 setFilterDate("");
                 fetchData();
               }}
@@ -291,9 +483,14 @@ function Billing() {
           <div className="billing-list">
             {bills.map((bill) => (
               <div key={bill._id} className="billing-card">
-                <p>
-                  <strong>Customer:</strong>{" "}
-                  {bill.customer?.name || bill.customerName}
+                <p className="billing-card-customer-row">
+                  <span>
+                    <strong>Customer:</strong>{" "}
+                    {bill.customer?.name || bill.customerName}
+                  </span>
+                  <span className="billing-card-customer-phone">
+                  Phone no: {bill.customer?.phone || ""}
+                  </span>
                 </p>
 
                 {bill.items.map((item, i) => (

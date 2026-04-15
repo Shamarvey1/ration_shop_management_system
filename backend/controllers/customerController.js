@@ -19,17 +19,36 @@ const addCustomer = async(req,res)=>{
     }
 }                       
 
+const getCustomers = async (req, res) => {
+  try {
+    const search = (req.query.search || "").trim();
 
-const getCustomers = async(req,res)=>{
-    try{
-        const customers = await Customer.find({user:req.user.id}).sort({createdAt:-1});
-        res.status(200).json(customers);    
-    }catch(error){
-        console.error("Get Customers Error:",error);
-        res.status(500).json({message:"Server error"});
-    }   
-}
+    let query = { user: req.user.id };
 
+    // Match both name and phone when searching.
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    let customersQuery = Customer.find(query)
+      .select("name phone address debt");
+
+    // 🔥 Limit ONLY when searching
+    if (search) {
+      customersQuery = customersQuery.limit(10);
+    }
+
+    const customers = await customersQuery;
+
+    res.json(customers);
+  } catch (error) {
+    console.error("Get Customers Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 
 const deleteCustomer = async (req, res) => {
