@@ -53,15 +53,18 @@ const createBill = async (req, res) => {
       await product.save();
     }
 
-    const paid = paidAmount || 0;
+    const paid = Number(paidAmount) || 0;
 
-    if (paid > totalAmount) {
+    if (paid < 0) {
       return res.status(400).json({
-        message: "Paid amount cannot be greater than total amount",
+        message: "Paid amount must be 0 or greater",
       });
     }
 
-    const remainingAmount = totalAmount - paid;
+    const previousPending = Number(foundCustomer.debt) || 0;
+    const currentBillPending = Math.max(0, totalAmount - paid);
+    const pendingPaid = Math.min(previousPending, Math.max(0, paid - totalAmount));
+    const remainingAmount = Math.max(0, previousPending + totalAmount - paid);
 
     const bill = await Bill.create({
       customer,
@@ -70,13 +73,14 @@ const createBill = async (req, res) => {
       totalAmount,
       paidAmount: paid,
       remainingAmount,
+      previousPending,
+      pendingPaid,
+      currentBillPending,
       user: req.user.id,
     });
 
-    if (bill.remainingAmount > 0) {
-      foundCustomer.debt += bill.remainingAmount;
-      await foundCustomer.save();
-    }
+    foundCustomer.debt = remainingAmount;
+    await foundCustomer.save();
 
     res.status(201).json(bill);
 

@@ -7,13 +7,14 @@ import {
 import { getProducts } from "../../services/productService";
 import { searchCustomers } from "../../services/customerService";
 import "./Billing.css";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, FileText } from "lucide-react";
 
 function Billing() {
   const [products, setProducts] = useState([]);
   const [bills, setBills] = useState([]);
 
   const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [selectedCustomerDebt, setSelectedCustomerDebt] = useState(0);
   const [showCustomerWarning, setShowCustomerWarning] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
   const [showCustomerResults, setShowCustomerResults] = useState(false);
@@ -22,6 +23,7 @@ function Billing() {
   const [items, setItems] = useState([]);
   const [paidAmount, setPaidAmount] = useState("");
   const [showPaidAmountWarning, setShowPaidAmountWarning] = useState(false);
+  const [showOverpaidWarning, setShowOverpaidWarning] = useState(false);
   const [showAddProductWarning, setShowAddProductWarning] = useState(false);
   const [showAddProductButtonWarning, setShowAddProductButtonWarning] = useState(false);
 
@@ -134,6 +136,7 @@ function Billing() {
 
   const handleCustomerPick = (customer) => {
     setSelectedCustomer(customer._id);
+    setSelectedCustomerDebt(Number(customer.debt) || 0);
     setShowCustomerWarning(false);
     setCustomerSearch(`${customer.name} (${customer.phone || "No phone"})`);
     setShowCustomerResults(false);
@@ -187,11 +190,21 @@ function Billing() {
     const numericPaidAmount = Number(paidAmount);
     if (Number.isNaN(numericPaidAmount) || numericPaidAmount < 0) {
       setShowPaidAmountWarning(true);
+      setShowOverpaidWarning(false);
       alert("Paid Amount must be 0 or greater");
       return;
     }
 
+    const totalDueAmount = selectedCustomerDebt + totalAmount;
+    if (numericPaidAmount > totalDueAmount) {
+      setShowPaidAmountWarning(false);
+      setShowOverpaidWarning(true);
+      alert(`Paid Amount cannot be greater than total due (₹${totalDueAmount}).`);
+      return;
+    }
+
     setShowPaidAmountWarning(false);
+    setShowOverpaidWarning(false);
 
     const billData = {
       customer: selectedCustomer,
@@ -205,9 +218,11 @@ function Billing() {
       setItems([]);
       setPaidAmount("");
       setShowPaidAmountWarning(false);
+      setShowOverpaidWarning(false);
       setShowAddProductWarning(false);
       setShowAddProductButtonWarning(false);
       setSelectedCustomer("");
+      setSelectedCustomerDebt(0);
       setShowCustomerWarning(false);
       setCustomerSearch("");
       setCustomerResults([]);
@@ -222,6 +237,222 @@ function Billing() {
     const data = await getFilteredBills(filterCustomer, filterDate);
     setBills(data);
   };
+
+  const escapeHtml = (value) => {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  };
+
+  const formatMoney = (value) => {
+    return `₹${Number(value || 0).toFixed(2)}`;
+  };
+
+  const handleGenerateInvoice = (bill) => {
+    const customerName = escapeHtml(bill.customer?.name || bill.customerName || "Customer");
+    const customerPhone = escapeHtml(bill.customer?.phone || "-");
+    const invoiceNumber = escapeHtml((bill._id || "").slice(-8).toUpperCase());
+    const invoiceDate = new Date(bill.createdAt || Date.now()).toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+    const itemsRows = (bill.items || [])
+      .map((item, index) => {
+        const productName = escapeHtml(item.product?.name || "Item");
+        const quantity = Number(item.quantity || 0);
+        const price = Number(item.price || 0);
+        const lineTotal = quantity * price;
+
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${productName}</td>
+            <td>${quantity}</td>
+            <td>${formatMoney(price)}</td>
+            <td>${formatMoney(lineTotal)}</td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    const currentBillPending = bill.currentBillPending ?? Math.max(0, Number(bill.totalAmount || 0) - Number(bill.paidAmount || 0));
+
+    const invoiceHtml = `
+      <!doctype html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Invoice ${invoiceNumber}</title>
+          <style>
+            * { box-sizing: border-box; }
+            body {
+              margin: 0;
+              font-family: Arial, sans-serif;
+              background: #fff;
+              color: #111827;
+              padding: 0;
+            }
+            .invoice {
+              max-width: 880px;
+              margin: 0 auto;
+              background: #fff;
+              border: 0;
+              border-radius: 0;
+              padding: 20px;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              gap: 12px;
+              border-bottom: 1px solid #e5e7eb;
+              padding-bottom: 12px;
+              margin-bottom: 16px;
+            }
+            .title {
+              margin: 0 0 4px;
+              font-size: 24px;
+              font-weight: 800;
+            }
+            .muted { color: #4b5563; margin: 2px 0; }
+            .meta { text-align: right; }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 8px;
+            }
+            th, td {
+              border: 1px solid #e5e7eb;
+              padding: 10px;
+              text-align: left;
+              font-size: 14px;
+            }
+            th {
+              background: #f3f4f6;
+              font-weight: 700;
+            }
+            .totals {
+              margin-top: 18px;
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 10px;
+            }
+            .total-row {
+              border: 1px solid #e5e7eb;
+              border-radius: 10px;
+              padding: 10px;
+              display: flex;
+              justify-content: space-between;
+              gap: 12px;
+            }
+            .total-pending {
+              color: #b91c1c;
+              font-weight: 700;
+            }
+            @media print {
+              body { background: #fff; padding: 0; }
+              .invoice {
+                border: 0;
+                border-radius: 0;
+                max-width: 100%;
+                margin: 0;
+                padding: 10mm;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <section class="invoice">
+            <header class="header">
+              <div>
+                <h1 class="title">Invoice</h1>
+                <p class="muted">Ration Management System</p>
+                <p class="muted">Customer: ${customerName}</p>
+                <p class="muted">Phone: ${customerPhone}</p>
+              </div>
+              <div class="meta">
+                <p class="muted"><strong>Invoice No:</strong> ${invoiceNumber}</p>
+                <p class="muted"><strong>Date:</strong> ${escapeHtml(invoiceDate)}</p>
+              </div>
+            </header>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsRows || `<tr><td colspan="5">No items</td></tr>`}
+              </tbody>
+            </table>
+
+            <div class="totals">
+              <div class="total-row"><span>Total Bill</span><strong>${formatMoney(bill.totalAmount)}</strong></div>
+              <div class="total-row"><span>Paid</span><strong>${formatMoney(bill.paidAmount)}</strong></div>
+              <div class="total-row"><span>Previous Pending</span><strong>${formatMoney(bill.previousPending)}</strong></div>
+              <div class="total-row"><span>Pending Paid</span><strong>${formatMoney(bill.pendingPaid)}</strong></div>
+              <div class="total-row"><span>Current Bill Pending</span><strong>${formatMoney(currentBillPending)}</strong></div>
+              <div class="total-row total-pending"><span>Total Pending</span><strong>${formatMoney(bill.remainingAmount)}</strong></div>
+            </div>
+          </section>
+        </body>
+      </html>
+    `;
+
+    const printFrame = document.createElement("iframe");
+    printFrame.style.position = "fixed";
+    printFrame.style.right = "0";
+    printFrame.style.bottom = "0";
+    printFrame.style.width = "0";
+    printFrame.style.height = "0";
+    printFrame.style.border = "0";
+    printFrame.style.visibility = "hidden";
+    document.body.appendChild(printFrame);
+
+    const frameWindow = printFrame.contentWindow;
+
+    if (!frameWindow) {
+      document.body.removeChild(printFrame);
+      alert("Unable to generate invoice right now. Please try again.");
+      return;
+    }
+
+    const cleanup = () => {
+      setTimeout(() => {
+        if (document.body.contains(printFrame)) {
+          document.body.removeChild(printFrame);
+        }
+      }, 250);
+    };
+
+    frameWindow.onafterprint = cleanup;
+    frameWindow.document.open();
+    frameWindow.document.write(invoiceHtml);
+    frameWindow.document.close();
+
+    setTimeout(() => {
+      frameWindow.focus();
+      frameWindow.print();
+    }, 150);
+  };
+
+  const totalAmount = calculateTotal();
+  const numericPaidAmount = Number(paidAmount) || 0;
+  const totalDueAmount = selectedCustomerDebt + totalAmount;
+  const isOverpaidAmount = paidAmount !== "" && numericPaidAmount > totalDueAmount;
+  const previewPendingPaid = Math.min(
+    selectedCustomerDebt,
+    Math.max(0, numericPaidAmount - totalAmount)
+  );
 
   return (
     <div className="billing-page">
@@ -248,6 +479,7 @@ function Billing() {
                 onChange={(e) => {
                   setCustomerSearch(e.target.value);
                   setSelectedCustomer("");
+                  setSelectedCustomerDebt(0);
                   setShowCustomerWarning(false);
                   setShowCustomerResults(true);
                 }}
@@ -350,7 +582,7 @@ function Billing() {
             </button>
 
             <input
-              className={`billing-paid-amount-input ${items.length > 0 && !showPaidAmountWarning ? "billing-paid-input-active" : ""} ${showPaidAmountWarning ? "billing-paid-amount-warning" : ""}`}
+              className={`billing-paid-amount-input ${items.length > 0 && !showPaidAmountWarning && !showOverpaidWarning && !isOverpaidAmount ? "billing-paid-input-active" : ""} ${(showPaidAmountWarning || showOverpaidWarning || isOverpaidAmount) ? "billing-paid-amount-warning" : ""}`}
               type="number"
               min="0"
               required
@@ -360,10 +592,12 @@ function Billing() {
                 const value = e.target.value;
                 if (value === "") {
                   setPaidAmount("");
+                  setShowOverpaidWarning(false);
                   return;
                 }
 
                 setShowPaidAmountWarning(false);
+                setShowOverpaidWarning(false);
 
                 if (items.length === 0) {
                   if (!showAddProductWarning) {
@@ -371,6 +605,7 @@ function Billing() {
                   }
                   setShowAddProductWarning(true);
                   setShowAddProductButtonWarning(true);
+                  setShowOverpaidWarning(false);
                   setPaidAmount("");
                   return;
                 }
@@ -382,6 +617,7 @@ function Billing() {
                   }
                   setShowAddProductWarning(true);
                   setShowAddProductButtonWarning(false);
+                  setShowOverpaidWarning(false);
                   setPaidAmount("");
                   return;
                 }
@@ -389,23 +625,29 @@ function Billing() {
                 setShowAddProductWarning(false);
                 setShowAddProductButtonWarning(false);
 
-                setPaidAmount(String(Math.max(0, Number(value))));
+                const nextPaidAmount = Math.max(0, Number(value));
+                setPaidAmount(String(nextPaidAmount));
+
+                const nextTotalDueAmount = selectedCustomerDebt + totalAmount;
+                setShowOverpaidWarning(nextPaidAmount > nextTotalDueAmount);
               }}
             />
 
             <div className="billing-summary-row">
               <p className="billing-summary-item">
-                <span className="billing-summary-label">Total</span>
-                <span className="billing-summary-value">₹{calculateTotal()}</span>
+                <span className="billing-summary-label">Total Bill</span>
+                <span className="billing-summary-value">₹{totalAmount}</span>
               </p>
-              <p className="billing-summary-item">
-                <span className="billing-summary-label">Paid</span>
-                <span className="billing-summary-value">₹{paidAmount || 0}</span>
+              <p className={`billing-summary-item ${selectedCustomerDebt > 0 ? "billing-summary-item-pending-active" : ""}`}>
+                <span className="billing-summary-label">Pending</span>
+                <span className={`billing-summary-value ${selectedCustomerDebt > 0 ? "billing-value-pending" : ""}`}>
+                  ₹{selectedCustomerDebt}
+                </span>
               </p>
-              <p className="billing-summary-item billing-summary-remaining">
-                <span className="billing-summary-label">Remaining</span>
-                <span className="billing-summary-value">
-                  ₹{calculateTotal() - (paidAmount || 0)}
+              <p className={`billing-summary-item ${previewPendingPaid > 0 ? "billing-summary-item-paid-active" : ""}`}>
+                <span className="billing-summary-label">Pending Paid</span>
+                <span className={`billing-summary-value ${previewPendingPaid > 0 ? "billing-value-paid" : ""}`}>
+                  ₹{previewPendingPaid}
                 </span>
               </p>
             </div>
@@ -481,31 +723,66 @@ function Billing() {
           </div>
 
           <div className="billing-list">
-            {bills.map((bill) => (
+            {bills.map((bill) => {
+              const isPaid = bill.remainingAmount === 0;
+              return (
               <div key={bill._id} className="billing-card">
-                <p className="billing-card-customer-row">
-                  <span>
-                    <strong>Customer:</strong>{" "}
-                    {bill.customer?.name || bill.customerName}
-                  </span>
-                  <span className="billing-card-customer-phone">
-                  Phone no: {bill.customer?.phone || ""}
-                  </span>
-                </p>
-
-                {bill.items.map((item, i) => (
-                  <div key={i}>
-                    {item.product?.name} — {item.quantity} × ₹{item.price}
+                <div className="billing-card-top">
+                  <div className="billing-card-header">
+                    <div>
+                      <div className="billing-card-invoice-id">Invoice #{(bill._id || "").slice(-6).toUpperCase()}</div>
+                      <p className="billing-card-customer-name">{bill.customer?.name || bill.customerName}</p>
+                      <p className="billing-card-meta">Phone: {bill.customer?.phone || "-"}</p>
+                    </div>
+                    <div className="billing-card-status-section">
+                      <div className={`billing-status-badge ${isPaid ? "billing-status-paid" : "billing-status-pending"}`}>
+                        {isPaid ? "✓ Paid" : "⚠ Pending"}
+                      </div>
+                      <div className="billing-card-date">
+                        Date: {new Date(bill.createdAt || Date.now()).toLocaleDateString("en-IN", { dateStyle: "short" })}
+                      </div>
+                    </div>
                   </div>
-                ))}
 
-                <p>Total: ₹{bill.totalAmount}</p>
-                <p>Paid: ₹{bill.paidAmount}</p>
-                <p>
-                  Remaining: <span className="billing-remaining-value">₹{bill.remainingAmount}</span>
-                </p>
+                  <div className="billing-card-items">
+                    {bill.items.map((item, i) => (
+                      <div key={i} className="billing-card-item-row">
+                        <span className="billing-item-name">{item.product?.name || "Item"}</span>
+                        <span className="billing-item-detail">{item.quantity} × ₹{item.price}</span>
+                        <span className="billing-item-total">₹{item.quantity * item.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="billing-card-summary">
+                  <div className="billing-summary-grid">
+                    <div className="billing-summary-cell">
+                      <span className="billing-cell-label">Total Bill</span>
+                      <span className="billing-cell-value">₹{bill.totalAmount}</span>
+                    </div>
+                    <div className="billing-summary-cell">
+                      <span className="billing-cell-label">Paid</span>
+                      <span className="billing-cell-value billing-value-paid">₹{bill.paidAmount}</span>
+                    </div>
+                    <div className={`billing-summary-cell ${isPaid ? "billing-summary-cell-complete" : "billing-summary-cell-highlight"}`}>
+                      <span className="billing-cell-label">Total Due</span>
+                      <span className={`billing-cell-value ${isPaid ? "" : "billing-remaining-value"}`}>₹{bill.remainingAmount}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="billing-invoice-btn"
+                  onClick={() => handleGenerateInvoice(bill)}
+                >
+                  <FileText size={18} style={{ marginRight: "8px", display: "inline" }} />
+                  Generate Invoice
+                </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>

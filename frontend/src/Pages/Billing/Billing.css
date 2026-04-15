@@ -575,6 +575,16 @@
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
 }
 
+.billing-summary-item-pending-active {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #fff7f7 0%, #ffe4e6 100%);
+}
+
+.billing-summary-item-paid-active {
+  border-color: #bbf7d0;
+  background: linear-gradient(180deg, #f7fff8 0%, #dcfce7 100%);
+}
+
 .billing-summary-item strong {
   color: #0f172a;
   font-size: 14px;
@@ -597,6 +607,38 @@
   overflow-wrap: anywhere;
   word-break: break-word;
   line-height: 1.2;
+}
+
+.billing-value-pending {
+  color: #dc2626;
+}
+
+.billing-value-paid {
+  color: #15803d;
+}
+
+.billing-value-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  vertical-align: middle;
+}
+
+.billing-value-badge-pending {
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+}
+
+.billing-value-badge-paid {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
 }
 
 .billing-summary-remaining {
@@ -671,61 +713,231 @@
 }
 
 .billing-card {
-  padding: 16px;
+  padding: 0;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
 .billing-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  border-color: #d1d5db;
+  transform: translateY(-2px);
 }
 
-.billing-card > p {
-  margin: 0 0 8px;
-  color: #475569;
-  font-size: 14px;
+.billing-card-top {
+  border-bottom: 2px solid #f3f4f6;
+  padding: 18px;
 }
 
-.billing-card > p:first-child {
-  color: #0f172a;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.billing-card-customer-row {
+.billing-card-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
-.billing-card-customer-phone {
-  color: #334155;
+.billing-card-invoice-id {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.billing-card-customer-name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1f2937;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.billing-card-meta {
+  margin: 4px 0 0;
   font-size: 13px;
-  font-weight: 600;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.billing-card-status-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.billing-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 
-.billing-card > div {
-  padding: 8px 0;
-  border-bottom: 1px dashed #e2e8f0;
-  color: #334155;
-  font-size: 14px;
+.billing-status-paid {
+  background: #d1fae5;
+  color: #047857;
+  border: 1px solid #6ee7b7;
 }
 
-.billing-card > div:last-of-type {
+.billing-status-pending {
+  background: #fed7aa;
+  color: #92400e;
+  border: 1px solid #fbbf24;
+}
+
+.billing-card-date {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-align: right;
+}
+
+.billing-card-items {
+  background: #fafbfc;
+  padding: 12px 0;
+  margin: 0;
+}
+
+.billing-card-item-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.8fr;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  align-items: center;
+}
+
+.billing-card-item-row:last-child {
   border-bottom: 0;
 }
 
-.billing-card > p:last-child {
-  margin-bottom: 0;
-  padding-top: 8px;
-  color: #15803d;
+.billing-item-name {
+  font-weight: 600;
+  color: #1f2937;
+  min-width: 0;
+  padding: 0 12px;
+  word-break: break-word;
+}
+
+.billing-item-detail {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.billing-item-total {
   font-weight: 700;
+  color: #15803d;
+  padding: 0 12px;
+  text-align: right;
+}
+
+.billing-card-summary {
+  padding: 16px 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.billing-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.billing-summary-cell {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.billing-summary-cell:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.billing-summary-cell-highlight {
+  border-color: #86efac;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-width: 2px;
+  font-weight: 600;
+}
+
+.billing-summary-cell-complete {
+  border-color: #bbf7d0;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1f4d1 100%);
+  border-width: 2px;
+  font-weight: 600;
+}
+
+.billing-cell-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #6b7280;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.billing-cell-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.billing-summary-cell-highlight .billing-cell-value,
+.billing-summary-cell-complete .billing-cell-value {
+  font-size: 18px;
+}
+
+.billing-value-pending {
+  color: #dc2626;
+}
+
+.billing-value-paid {
+  color: #15803d;
+}
+
+.billing-remaining-value {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.billing-invoice-btn {
+  width: calc(100% - 36px) !important;
+  min-width: auto !important;
+  min-height: 42px !important;
+  margin: 0 18px 18px !important;
+  padding: 12px 16px !important;
+  border-radius: 10px !important;
+  background: #15803d !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  border: 0 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.billing-invoice-btn:hover {
+  background: #166534 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25) !important;
 }
 
 @media (max-width: 900px) {

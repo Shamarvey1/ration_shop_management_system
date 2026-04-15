@@ -32,8 +32,50 @@ const addProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find({ user: req.user.id }).sort({ createdAt: -1 });
-    res.status(200).json(products);
+    const category = (req.query.category || "").trim();
+    const search = (req.query.search || "").trim();
+    const pageQuery = Number.parseInt(req.query.page, 10);
+    const limitQuery = Number.parseInt(req.query.limit, 10);
+    const hasPagination = Number.isInteger(pageQuery) || Number.isInteger(limitQuery);
+    const page = Number.isInteger(pageQuery) && pageQuery > 0 ? pageQuery : 1;
+    const limit = Number.isInteger(limitQuery) && limitQuery > 0 ? Math.min(limitQuery, 100) : 20;
+
+    const query = { user: req.user.id };
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (!hasPagination) {
+      const products = await Product.find(query).sort({ createdAt: -1 });
+      return res.status(200).json(products);
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Product.countDocuments(query),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    res.status(200).json({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("Get Products Error:", error);
     res.status(500).json({ message: "Server error" });

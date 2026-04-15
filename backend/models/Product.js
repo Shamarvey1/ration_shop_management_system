@@ -44,6 +44,10 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+productSchema.index({ user: 1, createdAt: -1 });
+productSchema.index({ user: 1, category: 1 });
+productSchema.index({ user: 1, name: 1 });
+
 const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;
