@@ -4,7 +4,7 @@
 	min-height: 0;
 	padding: 32px 36px;
 	box-sizing: border-box;
-	background: #f9fafb;
+	background: #F7FAF7;
 	color: #0f172a;
 	font-family: "Inter", "Poppins", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 	display: flex;
@@ -35,7 +35,7 @@
 	height: 4px;
 	margin-top: 10px;
 	border-radius: 999px;
-	background: linear-gradient(90deg, #15803d, #22c55e);
+	background: linear-gradient(90deg, #2E7D32, #81C784);
 }
 
 .products-description {
@@ -82,14 +82,14 @@
 }
 
 .products-primary-btn {
-	background: #15803d;
+	background: #2E7D32;
 	color: #ffffff;
 	padding: 10px 18px;
-	box-shadow: 0 10px 20px rgba(21, 128, 61, 0.18);
+	box-shadow: 0 10px 20px rgba(46, 125, 50, 0.18);
 }
 
 .products-primary-btn:hover {
-	background: #166534;
+	background: #1B5E28;
 }
 
 .products-delete-btn {
@@ -173,14 +173,14 @@
 	padding: 4px;
 	border: 1px solid #e2e8f0;
 	border-radius: 12px;
-	background: #f8fafc;
+	background: #F7FAF7;
 }
 
 .products-category-chip {
 	border: 1px solid transparent;
 	background: #ffffff;
 	color: #475569;
-	border-radius: 999px;
+	border-radius: 12px;
 	font-size: 12px;
 	font-weight: 700;
 	padding: 7px 13px;
@@ -199,15 +199,15 @@
 
 .products-category-chip:focus-visible {
 	outline: none;
-	border-color: #15803d;
-	box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.16);
+	border-color: #2E7D32;
+	box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.16);
 }
 
 .products-category-chip.active {
-	background: #ecfdf5;
-	border-color: #22c55e;
-	color: #166534;
-	box-shadow: 0 4px 10px rgba(21, 128, 61, 0.16);
+	background: #E8F5E9;
+	border-color: #81C784;
+	color: #1B5E28;
+	box-shadow: 0 4px 10px rgba(46, 125, 50, 0.16);
 }
 
 .products-search-input {
@@ -217,7 +217,7 @@
 	padding: 9px 12px;
 	border: 1px solid #d1d5db;
 	border-radius: 12px;
-	background: #f8fafc;
+	background: #F7FAF7;
 	color: #0f172a;
 	font-size: 13px;
 	box-sizing: border-box;
@@ -225,8 +225,8 @@
 
 .products-search-input:focus {
 	outline: none;
-	border-color: #15803d;
-	box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.12);
+	border-color: #2E7D32;
+	box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.12);
 	background: #ffffff;
 }
 
@@ -276,7 +276,7 @@
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	color: #64748b;
-	background: #f8fafc;
+	background: #F7FAF7;
 	border-bottom: 1px solid #e5e7eb;
 }
 
@@ -294,7 +294,7 @@
 }
 
 .products-table-row:hover {
-	background: #f8fafc;
+	background: #F7FAF7;
 }
 
 .products-table-head > span,
@@ -343,12 +343,18 @@
 .products-stock-badge {
 	display: inline-flex;
 	align-items: center;
-	border-radius: 999px;
-	padding: 4px 9px;
+	justify-content: center;
+	width: 96px;
+	height: 32px;
+	box-sizing: border-box;
+	border-radius: 10px;
+	padding: 0 8px;
 	font-size: 12px;
 	font-weight: 700;
 	letter-spacing: 0.01em;
 	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .products-stock-good {

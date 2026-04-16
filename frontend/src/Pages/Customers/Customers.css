@@ -45,7 +45,7 @@ html, body, #root {
   padding: 32px 36px;
   display: flex;
   flex-direction: column;
-  background: #f9fafb;
+  background: #F7FAF7;
   font-family: "Inter", "Poppins", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   color: #0f172a;
   overflow: hidden;
@@ -96,12 +96,12 @@ html, body, #root {
 }
 
 .btn-add-customer {
-  background: #15803d;
+  background: #2E7D32;
   color: white;
 }
 
 .btn-add-customer:hover {
-  background: #166534;
+  background: #1B5E28;
 }
 
 .btn-export {
@@ -115,12 +115,12 @@ html, body, #root {
 }
 
 .btn-add {
-  background: #15803d;
+  background: #2E7D32;
   color: white;
 }
 
 .btn-add:hover {
-  background: #166534;
+  background: #1B5E28;
 }
 
 .btn-delete {
@@ -206,8 +206,8 @@ html, body, #root {
 
 .form-group input:focus {
   outline: none;
-  border-color: #15803d;
-  box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.12);
+  border-color: #2E7D32;
+  box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.12);
 }
 
 .customer-layout {
@@ -252,7 +252,7 @@ html, body, #root {
 .customer-search {
   padding: 18px 24px;
   border-bottom: 1px solid #e5e7eb;
-  background: #f8fafc;
+  background: #F7FAF7;
 }
 
 .customer-search input {
@@ -297,7 +297,7 @@ html, body, #root {
 }
 
 .customer-row:hover {
-  background: #f8fafc;
+  background: #F7FAF7;
   transform: translateY(-0.5px);
 }
 
