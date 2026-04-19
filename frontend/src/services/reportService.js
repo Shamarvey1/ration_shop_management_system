@@ -94,3 +94,29 @@ export const getSalesTrend = async (filter = "daily") => {
     return [];
   }
 };
+
+export const getReportInsights = async ({ filter = "daily", from = "", to = "" } = {}) => {
+  try {
+    const params = new URLSearchParams();
+    params.set("filter", filter);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+
+    const res = await fetch(`${API_URL}/reports/insights?${params.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to fetch report insights");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Report Insights Error:", error.message);
+    return null;
+  }
+};

@@ -473,8 +473,8 @@
 .products-modal-form input:focus,
 .products-modal-form select:focus {
 	outline: none;
-	border-color: #15803d;
-	box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.12);
+	border-color: #2E7D32;
+	box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.12);
 	background: #ffffff;
 }
 
