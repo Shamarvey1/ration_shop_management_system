@@ -1,27 +1,13 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
+import "./Layout.css";
 
 function Layout() {
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        width: "100%",
-        overflow: "hidden",
-      }}
-    >
+    <div className="layout-container">
       <Sidebar />
-      <main
-        style={{
-          flex: 1,
-          height: "100vh",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
+      <main className="layout-main">
+        <div className="layout-content">
           <Outlet />
         </div>
       </main>
