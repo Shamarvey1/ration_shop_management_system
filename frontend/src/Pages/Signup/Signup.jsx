@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signupUser } from "../../services/authService";
+import { Eye, EyeOff, ShoppingCart } from "lucide-react";
 import "./Signup.css";
 
 function Signup() {
@@ -8,11 +9,27 @@ function Signup() {
   const [ownerName, setOwnerName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    if (!shopName || !ownerName || !email || !password) {
+      setError("Please fill in all fields");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
 
     const { status, data } = await signupUser({
       shopName,
@@ -22,52 +39,103 @@ function Signup() {
     });
 
     if (status === 201 || status === 200) {
-      alert("Signup successful! Please login.");
       navigate("/login");
     } else {
-      alert(data.message || "Signup failed");
+      setError(data.message || "Signup failed. Please try again.");
     }
+
+    setLoading(false);
   };
 
   return (
-    <div className="signup-container">
-      <h2>Signup</h2>
+    <div className="signup-page">
+      <div className="signup-container">
+        <div className="signup-header">
+          <div className="signup-logo">
+            <ShoppingCart size={32} className="logo-icon" />
+            <h1>RationShop Pro</h1>
+          </div>
+          <p className="signup-subtitle">Create your account to get started</p>
+        </div>
 
-      <form onSubmit={handleSignup} className="signup-form">
-        <input
-          type="text"
-          placeholder="Enter shop name"
-          value={shopName}
-          onChange={(e) => setShopName(e.target.value)}
-          required
-        />
+        <form onSubmit={handleSignup} className="signup-form">
+          <div className="form-group">
+            <label htmlFor="shopName">Shop Name</label>
+            <input
+              id="shopName"
+              type="text"
+              placeholder="Enter your shop name"
+              value={shopName}
+              onChange={(e) => setShopName(e.target.value)}
+              className="form-input"
+              required
+            />
+          </div>
 
-        <input
-          type="text"
-          placeholder="Enter owner name"
-          value={ownerName}
-          onChange={(e) => setOwnerName(e.target.value)}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="ownerName">Owner Name</label>
+            <input
+              id="ownerName"
+              type="text"
+              placeholder="Enter your full name"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              className="form-input"
+              required
+            />
+          </div>
 
-        <input
-          type="email"
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="form-input"
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <div className="password-wrapper">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="form-input password-input"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
 
-        <button type="submit">Signup</button>
-      </form>
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="signup-button" disabled={loading}>
+            {loading ? "Creating account..." : "Sign Up"}
+          </button>
+        </form>
+
+        <div className="signup-footer">
+          <p>
+            Already have an account?{" "}
+            <Link to="/login" className="login-link">
+              Login here
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
