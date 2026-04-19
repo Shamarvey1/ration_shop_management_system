@@ -95,12 +95,12 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: 10px;
   border: none;
   background: #ef4444;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
