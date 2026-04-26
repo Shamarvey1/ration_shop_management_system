@@ -34,6 +34,9 @@ catch(error){
 const loginUser = async(req,res)=>{
     const {email,password} = req.body;
     try{
+        if(!email || !password) {
+            return res.status(400).json({message:"Email and password are required"})
+        }
         const user = await User.findOne({email})
         if(user){
             const isMatch = await bycrypt.compare(password,user.password)
@@ -47,10 +50,11 @@ const loginUser = async(req,res)=>{
                 res.status(401).json({message:"Invalid Password"})
             }
         }else{
-            res.status(404).json({message:"Invalid Ceredentials"})
+            res.status(404).json({message:"Invalid Credentials"})
         }
     }catch(error){
-        res.status(500).json({message:"Server Error"})
+        console.error("Login error:", error);
+        res.status(500).json({message:"Server Error", error: error.message})
     }
 }
 
