@@ -7,7 +7,7 @@
   padding: 24px 16px;
   box-sizing: border-box;
   border-right: 1px solid #e5e5e5;
-  font-family: "Inter", "Poppins", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
   overflow: hidden;
 }
 
@@ -28,9 +28,10 @@
 .sidebar-title {
   margin: 0;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
   color: #0f172a;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
 }
 
 .sidebar-nav {
@@ -62,6 +63,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
+  letter-spacing: 0.2px;
+  line-height: 1.5;
   font-family: inherit;
 }
 
@@ -98,19 +101,22 @@
   padding: 10px 12px;
   border-radius: 10px;
   border: none;
-  background: #ef4444;
-  color: #ffffff;
+  background: transparent;
+  color: #64748b;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+  line-height: 1.5;
   font-family: inherit;
   margin-top: auto;
 }
 
 .sidebar-logout:hover {
-  background: #dc2626;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  background: #2E7D32;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
 .sidebar-logout:active {
