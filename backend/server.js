@@ -12,8 +12,8 @@ const billRoutes = require("./routes/billRoutes.js");
 const reportRoutes = require("./routes/reportRoutes");
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "*",
-  credentials: true
+  origin: "*",
+  credentials: false
 }));
 connectDB();
 app.use(express.json());
