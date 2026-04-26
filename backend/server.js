@@ -11,10 +11,15 @@ const customerRoutes = require("./routes/customerRoutes.js");
 const billRoutes = require("./routes/billRoutes.js");
 const reportRoutes = require("./routes/reportRoutes");
 
+// Enable CORS
 app.use(cors({
   origin: "*",
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: false
 }));
+app.options('*', cors());
+
 connectDB();
 app.use(express.json());
 app.get('/',(req,res)=>{
