@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "https://ration-shop-management-system-g0pm.onrender.com/api";
 
 const buildProductsEndpoint = (filters = {}) => {
   const params = new URLSearchParams();
