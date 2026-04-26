@@ -18,7 +18,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: false
 }));
-app.options('*', cors());
 
 connectDB();
 app.use(express.json());
