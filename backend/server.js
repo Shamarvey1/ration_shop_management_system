@@ -3,6 +3,8 @@ const cors = require('cors');
 const app = express();
 const dotenv = require('dotenv');
 dotenv.config();
+
+
 const authRoutes = require('./routes/authRoutes');
 const protect = require('./middleware/authMiddleware');
 const connectDB = require('./config/db');
@@ -11,7 +13,7 @@ const customerRoutes = require("./routes/customerRoutes.js");
 const billRoutes = require("./routes/billRoutes.js");
 const reportRoutes = require("./routes/reportRoutes");
 
-// Enable CORS with proper configuration
+
 const corsOptions = {
   origin: "*",
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
