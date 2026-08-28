@@ -2,13 +2,19 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function ProtectedRoute({ children }) {
-  const [checking, setChecking] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const tokenInStorage = () => {
+    const token = localStorage.getItem("token");
+    return token && token !== "undefined" && token !== "null";
+  };
+
+  const [checking, setChecking] = useState(!tokenInStorage());
+  const [isAuthenticated, setIsAuthenticated] = useState(tokenInStorage());
   const location = useLocation();
 
   useEffect(() => {
     const validate = async () => {
       const token = localStorage.getItem("token");
+
       if (!token || token === "undefined" || token === "null") {
         localStorage.removeItem("token");
         setIsAuthenticated(false);
@@ -17,6 +23,7 @@ function ProtectedRoute({ children }) {
       }
 
       try {
+        setChecking(true);
         const API_URL = import.meta.env.VITE_API_URL || "https://ration-shop-management-system-g0pm.onrender.com/api";
         const res = await fetch(`${API_URL}/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -39,7 +46,20 @@ function ProtectedRoute({ children }) {
     validate();
   }, [location.pathname]);
 
-  if (checking) return null;
+  if (checking && isAuthenticated) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "14px",
+        color: "#4b5563",
+      }}>
+        Loading...
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
