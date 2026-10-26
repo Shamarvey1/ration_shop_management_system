@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   Package,
 } from "lucide-react";
+import { Skeleton } from "../../components/Skeleton/Skeleton";
 import "./Dashboard.css";
 
 const TREND_VIEW_STORAGE_KEY = "dashboardTrendView";
@@ -73,11 +74,7 @@ function Dashboard() {
   };
 
   if (!summary || !profit || !sales) {
-    return (
-      <div className="dashboard-page">
-        <p className="dashboard-loading">Loading dashboard...</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const recentBills = bills.slice(0, 4);
@@ -623,6 +620,103 @@ function getAverageSaleChange(data) {
   if (prevAvg === 0) return currentAvg > 0 ? 100 : 0;
 
   return ((currentAvg - prevAvg) / prevAvg) * 100;
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <Skeleton width="220px" height="32px" style={{ marginBottom: "10px" }} />
+        <Skeleton width="340px" height="16px" />
+      </header>
+
+      <section className="dashboard-metrics">
+        {[1, 2, 3, 4].map((i) => (
+          <article key={i} className="metric-card">
+            <div className="metric-top-row">
+              <div>
+                <Skeleton width="90px" height="13px" style={{ marginBottom: "8px" }} />
+                <Skeleton width="120px" height="24px" />
+              </div>
+              <Skeleton width="42px" height="42px" borderRadius="10px" />
+            </div>
+            <Skeleton width="150px" height="12px" style={{ marginTop: "12px" }} />
+          </article>
+        ))}
+      </section>
+
+      <section className="dashboard-grid dashboard-grid-top">
+        <article className="panel chart-panel">
+          <div className="panel-header">
+            <Skeleton width="140px" height="20px" />
+            <Skeleton width="100px" height="28px" borderRadius="8px" />
+          </div>
+          <div style={{ padding: "18px 0" }}>
+            <Skeleton width="100%" height="240px" borderRadius="10px" />
+          </div>
+        </article>
+
+        <article className="panel table-panel">
+          <div className="panel-header">
+            <Skeleton width="150px" height="20px" />
+            <Skeleton width="70px" height="20px" borderRadius="12px" />
+          </div>
+          <div className="list-items">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="list-row">
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <Skeleton width="110px" height="15px" />
+                  <Skeleton width="70px" height="12px" />
+                </div>
+                <Skeleton width="60px" height="16px" />
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="dashboard-grid dashboard-grid-bottom">
+        <article className="panel list-panel">
+          <div className="panel-header">
+            <Skeleton width="160px" height="20px" />
+            <Skeleton width="65px" height="20px" borderRadius="6px" />
+          </div>
+          <div className="list-items">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="list-row">
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <Skeleton width="120px" height="15px" />
+                  <Skeleton width="80px" height="12px" />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
+                  <Skeleton width="70px" height="15px" />
+                  <Skeleton width="55px" height="18px" borderRadius="12px" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel list-panel">
+          <div className="panel-header">
+            <Skeleton width="140px" height="20px" />
+            <Skeleton width="60px" height="20px" borderRadius="12px" />
+          </div>
+          <div className="alert-list">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="alert-row">
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <Skeleton width="110px" height="15px" />
+                  <Skeleton width="80px" height="12px" />
+                </div>
+                <Skeleton width="65px" height="28px" borderRadius="8px" />
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+    </div>
+  );
 }
 
 export default Dashboard;

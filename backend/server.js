@@ -12,6 +12,7 @@ const productRoutes = require("./routes/productRoutes");
 const customerRoutes = require("./routes/customerRoutes.js");
 const billRoutes = require("./routes/billRoutes.js");
 const reportRoutes = require("./routes/reportRoutes");
+const agentRoutes = require("./routes/agentRoutes");
 
 
 const corsOptions = {
@@ -33,6 +34,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/bills", billRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/agent", agentRoutes);
 app.get("/api/test", protect , (req, res) => {
   res.json({
     message: "Protected route working",

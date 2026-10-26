@@ -9,6 +9,7 @@ import {
 import "./Products.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { Skeleton } from "../../components/Skeleton/Skeleton";
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -311,7 +312,6 @@ function Products() {
       </div>
 
       {error && <p className="products-feedback products-feedback-error">{error}</p>}
-      {loading && <p className="products-feedback products-feedback-loading">Loading...</p>}
 
       <section className="products-section products-list-section">
         <h3 className="products-section-title">Inventory List</h3>
@@ -357,7 +357,31 @@ function Products() {
           </div>
 
           <div className="products-table-body">
-            {products.length > 0 ? (
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="products-table-row">
+                  <span className="products-cell-name">
+                    <Skeleton width="130px" height="15px" />
+                  </span>
+                  <span>
+                    <Skeleton width="75px" height="15px" borderRadius="10px" />
+                  </span>
+                  <span>
+                    <Skeleton width="50px" height="15px" />
+                  </span>
+                  <span>
+                    <Skeleton width="50px" height="15px" />
+                  </span>
+                  <span>
+                    <Skeleton width="70px" height="20px" borderRadius="10px" />
+                  </span>
+                  <span className="products-row-actions">
+                    <Skeleton width="45px" height="26px" borderRadius="8px" />
+                    <Skeleton width="55px" height="26px" borderRadius="8px" />
+                  </span>
+                </div>
+              ))
+            ) : products.length > 0 ? (
               products.map((product) => (
                 <div key={product._id} className="products-table-row">
                   <span className="products-cell-name">{product.name}</span>

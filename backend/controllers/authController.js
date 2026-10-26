@@ -3,7 +3,7 @@ const bycrypt = require('bcryptjs')
 const User = require('../models/user')
 
 const generateToken = (id)=>{
-    return jwt.sign({id:id},process.env.JWT_SECRET,{expiresIn:'10d'})
+    return jwt.sign({id:id},process.env.JWT_SECRET,{expiresIn:'1d'})
     }
 const registerUser = async (req,res)=>{
     const {shopName,ownerName,email,password} = req.body;

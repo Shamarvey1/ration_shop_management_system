@@ -1,14 +1,14 @@
-# dependencies
 node_modules/
-
-# environment variables
-.env
-frontend/.env
-backend/.env
-
-# build files
 dist/
 build/
-
-# logs
+.DS_Store
 npm-debug.log*
+
+.env
+.env.*
+!.env.example
+*.env
+*.env.*
+*/**/.env
+*/**/.env.*
+!*/**/.env.example

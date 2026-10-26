@@ -25,7 +25,6 @@ const getCustomers = async (req, res) => {
 
     let query = { user: req.user.id };
 
-    // Match both name and phone when searching.
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: "i" } },
@@ -36,7 +35,6 @@ const getCustomers = async (req, res) => {
     let customersQuery = Customer.find(query)
       .select("name phone address debt");
 
-    // 🔥 Limit ONLY when searching
     if (search) {
       customersQuery = customersQuery.limit(10);
     }
@@ -92,7 +90,7 @@ const getCustomerDetails = async (req, res) => {
       customer,
       totalPurchase,
       totalBills: bills.length,
-      bills, // 🔥 IMPORTANT (for history)
+      bills,
     });
 
   } catch (error) {

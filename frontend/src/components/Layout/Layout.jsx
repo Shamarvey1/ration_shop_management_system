@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../Sidebar/Sidebar";
+import AIChat from "../AIChat/AIChat";
 import "./Layout.css";
 
 function Layout() {
@@ -11,6 +12,8 @@ function Layout() {
           <Outlet />
         </div>
       </main>
+      {/* AI Assistant — floats on every page */}
+      <AIChat />
     </div>
   );
 }

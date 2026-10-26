@@ -8,9 +8,11 @@ import {
 import "./Customers.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { Skeleton } from "../../components/Skeleton/Skeleton";
 
 function Customers() {
   const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerDetails, setCustomerDetails] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -21,11 +23,14 @@ function Customers() {
   const [searchTerm, setSearchTerm] = useState("");
   const fetchCustomers = async () => {
     try {
+      setLoading(true);
       const data = await getCustomers();
       setCustomers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Fetch error:", error);
       setCustomers([]);
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -176,7 +181,27 @@ function Customers() {
           </div>
 
           <div className="customer-list-body">
-            {filteredCustomers.length > 0 ? (
+            {loading ? (
+              Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className="customer-row">
+                  <div
+                    className="customer-row-main"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      width: "100%",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <Skeleton width="110px" height="15px" />
+                    <Skeleton width="100px" height="14px" />
+                    <Skeleton width="60px" height="18px" borderRadius="10px" />
+                  </div>
+                  <Skeleton width="48px" height="28px" borderRadius="6px" />
+                </div>
+              ))
+            ) : filteredCustomers.length > 0 ? (
               filteredCustomers.map((customer) => (
                 <div
                   key={customer._id}
@@ -217,7 +242,18 @@ function Customers() {
           </div>
         </div>
         <div className="customer-profile">
-          {selectedCustomer ? (
+          {loading ? (
+            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <Skeleton width="180px" height="26px" />
+              <Skeleton width="140px" height="18px" />
+              <Skeleton width="220px" height="14px" />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "12px" }}>
+                <Skeleton width="100%" height="80px" borderRadius="12px" />
+                <Skeleton width="100%" height="80px" borderRadius="12px" />
+              </div>
+              <Skeleton width="100%" height="160px" borderRadius="12px" style={{ marginTop: "12px" }} />
+            </div>
+          ) : selectedCustomer ? (
             <>
               <div className="profile-main">
                 <div>

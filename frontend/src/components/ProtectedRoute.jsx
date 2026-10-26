@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { API_URL } from "../constants/api";
 
 function ProtectedRoute({ children }) {
   const tokenInStorage = () => {
@@ -24,7 +25,6 @@ function ProtectedRoute({ children }) {
 
       try {
         setChecking(true);
-        const API_URL = import.meta.env.VITE_API_URL || "https://ration-shop-management-system-g0pm.onrender.com/api";
         const res = await fetch(`${API_URL}/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });

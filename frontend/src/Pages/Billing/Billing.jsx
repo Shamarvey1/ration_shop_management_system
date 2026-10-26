@@ -8,10 +8,12 @@ import { getProducts } from "../../services/productService";
 import { searchCustomers } from "../../services/customerService";
 import "./Billing.css";
 import { ShoppingCart, FileText } from "lucide-react";
+import { Skeleton } from "../../components/Skeleton/Skeleton";
 
 function Billing() {
   const [products, setProducts] = useState([]);
   const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [selectedCustomerDebt, setSelectedCustomerDebt] = useState(0);
@@ -39,11 +41,18 @@ function Billing() {
   }, []);
 
   const fetchData = async () => {
-    const prod = await getProducts();
-    const billData = await getBills();
+    try {
+      setLoading(true);
+      const prod = await getProducts();
+      const billData = await getBills();
 
-    setProducts(prod);
-    setBills(billData);
+      setProducts(prod || []);
+      setBills(billData || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addItem = () => {
@@ -454,6 +463,8 @@ function Billing() {
     Math.max(0, numericPaidAmount - totalAmount)
   );
 
+  if (loading) return <BillingSkeleton />;
+
   return (
     <div className="billing-page">
       <div className="billing-header">
@@ -495,7 +506,10 @@ function Billing() {
               {showCustomerResults && customerSearchQuery && (
                 <div className="billing-customer-results" role="listbox">
                   {isCustomerSearchLoading ? (
-                    <p className="billing-customer-result-empty">Searching...</p>
+                    <div style={{ padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <Skeleton width="130px" height="14px" />
+                      <Skeleton width="90px" height="12px" />
+                    </div>
                   ) : customerResults.length > 0 ? (
                     customerResults.map((customer) => (
                       <button
@@ -680,7 +694,10 @@ function Billing() {
               {showFilterCustomerResults && filterCustomerSearchQuery && (
                 <div className="billing-customer-results" role="listbox">
                   {isFilterCustomerSearchLoading ? (
-                    <p className="billing-customer-result-empty">Searching...</p>
+                    <div style={{ padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <Skeleton width="130px" height="14px" />
+                      <Skeleton width="90px" height="12px" />
+                    </div>
                   ) : filterCustomerResults.length > 0 ? (
                     filterCustomerResults.map((customer) => (
                       <button
@@ -783,6 +800,126 @@ function Billing() {
               </div>
               );
             })}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function BillingSkeleton() {
+  return (
+    <div className="billing-page">
+      <div className="billing-header">
+        <div>
+          <h2 className="billing-title">
+            <Skeleton width="130px" height="32px" borderRadius="6px" />
+          </h2>
+          <p className="billing-description">
+            <Skeleton width="380px" height="15px" style={{ marginTop: "10px" }} />
+          </p>
+        </div>
+      </div>
+
+      <div className="billing-panels">
+        <section className="billing-section billing-form-section">
+          <h3 className="billing-section-title">
+            <Skeleton width="110px" height="20px" />
+          </h3>
+
+          <div className="billing-form" style={{ overflow: "hidden" }}>
+            <div className="billing-customer-search">
+              <Skeleton width="96%" height="40px" borderRadius="10px" style={{ margin: "0 auto" }} />
+            </div>
+
+            <div className="billing-products-scroll" style={{ minHeight: "140px", display: "flex", flexDirection: "column", gap: "10px", padding: "12px" }}>
+              {[1, 2].map((i) => (
+                <div key={i} className="billing-item-row" style={{ display: "grid", gridTemplateColumns: "1.8fr 0.8fr 1fr 1fr", gap: "8px", alignItems: "center" }}>
+                  <Skeleton width="100%" height="36px" borderRadius="10px" />
+                  <Skeleton width="100%" height="36px" borderRadius="10px" />
+                  <Skeleton width="100%" height="36px" borderRadius="8px" />
+                  <Skeleton width="100%" height="32px" borderRadius="8px" />
+                </div>
+              ))}
+            </div>
+
+            <Skeleton width="128px" height="30px" borderRadius="8px" style={{ marginBottom: "6px" }} />
+
+            <Skeleton width="180px" height="32px" borderRadius="8px" style={{ marginBottom: "10px" }} />
+
+            <div className="billing-summary-row">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="billing-summary-item"
+                  style={{
+                    padding: "12px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "10px",
+                    background: "#f8fafc",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <Skeleton width="60px" height="12px" />
+                  <Skeleton width="80px" height="22px" />
+                </div>
+              ))}
+            </div>
+
+            <Skeleton width="160px" height="38px" borderRadius="10px" style={{ marginTop: "8px" }} />
+          </div>
+        </section>
+
+        <section className="billing-section billing-list-section">
+          <h3 className="billing-section-title">
+            <Skeleton width="90px" height="20px" />
+          </h3>
+
+          <div className="billing-filter-bar">
+            <Skeleton width="100%" height="38px" borderRadius="8px" />
+            <Skeleton width="100%" height="38px" borderRadius="8px" />
+            <Skeleton width="96px" height="38px" borderRadius="8px" />
+            <Skeleton width="96px" height="38px" borderRadius="8px" />
+          </div>
+
+          <div className="billing-list">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="billing-card">
+                <div className="billing-card-top">
+                  <div className="billing-card-header">
+                    <div>
+                      <Skeleton width="90px" height="12px" style={{ marginBottom: "8px" }} />
+                      <Skeleton width="160px" height="18px" style={{ marginBottom: "6px" }} />
+                      <Skeleton width="110px" height="12px" />
+                    </div>
+                    <div className="billing-card-status-section">
+                      <Skeleton width="75px" height="26px" borderRadius="999px" />
+                    </div>
+                  </div>
+
+                  <div className="billing-card-grid">
+                    <div>
+                      <Skeleton width="60px" height="11px" style={{ marginBottom: "6px" }} />
+                      <Skeleton width="75px" height="16px" />
+                    </div>
+                    <div>
+                      <Skeleton width="60px" height="11px" style={{ marginBottom: "6px" }} />
+                      <Skeleton width="75px" height="16px" />
+                    </div>
+                    <div>
+                      <Skeleton width="60px" height="11px" style={{ marginBottom: "6px" }} />
+                      <Skeleton width="75px" height="16px" />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ padding: "10px 18px", background: "#f9fafb" }}>
+                  <Skeleton width="150px" height="24px" borderRadius="6px" />
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       </div>

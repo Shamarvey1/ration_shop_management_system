@@ -23,6 +23,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 import "./Reports.css";
+import { Skeleton } from "../../components/Skeleton/Skeleton";
 
 function Reports() {
   const [insights, setInsights] = useState(null);
@@ -62,7 +63,7 @@ function Reports() {
     }
   };
 
-  if (loading) return <p className="reports-loading">Loading reports...</p>;
+  if (loading) return <ReportsSkeleton />;
   if (error) return <p className="reports-error">{error}</p>;
   if (!insights) return <p className="reports-error">No report data available.</p>;
 
@@ -348,6 +349,144 @@ function Reports() {
                 <Bar dataKey="quantity" fill="#2E7D32" radius={[0, 8, 8, 0]} barSize={16} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </article>
+      </section>
+    </div>
+  );
+}
+
+function ReportsSkeleton() {
+  return (
+    <div className="reports-page">
+      <header className="reports-header">
+        <div>
+          <Skeleton width="220px" height="28px" style={{ marginBottom: "8px" }} />
+          <Skeleton width="380px" height="14px" />
+        </div>
+        <div className="reports-controls">
+          <Skeleton width="88px" height="36px" borderRadius="8px" />
+          <Skeleton width="132px" height="36px" borderRadius="8px" />
+          <Skeleton width="132px" height="36px" borderRadius="8px" />
+          <Skeleton width="132px" height="36px" borderRadius="8px" />
+        </div>
+      </header>
+
+      <section className="reports-cards">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <article key={i} className="reports-card">
+            <Skeleton width="78px" height="12px" style={{ marginBottom: "8px" }} />
+            <Skeleton width="112px" height="22px" />
+          </article>
+        ))}
+      </section>
+
+      <section className="reports-grid reports-grid-top">
+        <article className="reports-panel">
+          <div className="reports-panel-header">
+            <Skeleton width="90px" height="18px" />
+            <Skeleton width="110px" height="22px" borderRadius="999px" />
+          </div>
+          <div className="reports-chart-wrap" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "220px" }}>
+            <Skeleton width="100%" height="210px" borderRadius="10px" />
+          </div>
+        </article>
+
+        <article className="reports-panel">
+          <div className="reports-panel-header">
+            <Skeleton width="130px" height="18px" />
+          </div>
+          <div className="reports-chart-wrap" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "220px", gap: "16px" }}>
+            <Skeleton width="116px" height="116px" borderRadius="50%" />
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", width: "100%" }}>
+              <Skeleton width="55px" height="12px" borderRadius="6px" />
+              <Skeleton width="65px" height="12px" borderRadius="6px" />
+              <Skeleton width="50px" height="12px" borderRadius="6px" />
+              <Skeleton width="60px" height="12px" borderRadius="6px" />
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="reports-grid reports-grid-bottom">
+        <article className="reports-panel">
+          <div className="reports-panel-header">
+            <Skeleton width="160px" height="18px" />
+          </div>
+          <div className="reports-list">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="reports-row">
+                <div>
+                  <Skeleton width="110px" height="14px" style={{ marginBottom: "5px" }} />
+                  <Skeleton width="75px" height="12px" />
+                </div>
+                <Skeleton width="55px" height="15px" />
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="reports-panel">
+          <div className="reports-panel-header">
+            <Skeleton width="150px" height="18px" />
+          </div>
+          <div className="reports-list">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="reports-row">
+                <div>
+                  <Skeleton width="105px" height="14px" style={{ marginBottom: "5px" }} />
+                  <Skeleton width="70px" height="12px" />
+                </div>
+                <Skeleton width="45px" height="15px" />
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="reports-panel">
+          <div className="reports-panel-header">
+            <Skeleton width="90px" height="18px" />
+          </div>
+          <div className="reports-list">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="reports-row">
+                <Skeleton width="70px" height="14px" />
+                <Skeleton width="60px" height="15px" />
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="reports-panel">
+          <div className="reports-panel-header">
+            <Skeleton width="160px" height="18px" />
+          </div>
+          <div className="reports-list">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="reports-row">
+                <div>
+                  <Skeleton width="115px" height="14px" style={{ marginBottom: "5px" }} />
+                  <Skeleton width="65px" height="12px" />
+                </div>
+                <Skeleton width="40px" height="15px" />
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="reports-grid-single">
+        <article className="reports-panel">
+          <div className="reports-panel-header">
+            <Skeleton width="170px" height="18px" />
+          </div>
+          <div className="reports-chart-wrap" style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "10px", padding: "6px 0" }}>
+            {[80, 65, 48, 32].map((pct, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                <Skeleton width="90px" height="14px" />
+                <Skeleton width={`${pct}%`} height="16px" borderRadius="0 8px 8px 0" />
+              </div>
+            ))}
           </div>
         </article>
       </section>

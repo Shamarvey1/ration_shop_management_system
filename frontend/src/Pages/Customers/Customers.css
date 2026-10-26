@@ -68,6 +68,16 @@ html, body, #root {
   line-height: 1.4;
 }
 
+.customers-header h2::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2E7D32, #81C784);
+}
+
 .customers-header p {
   margin: 0;
   color: #475569;
