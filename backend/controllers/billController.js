@@ -2,6 +2,8 @@ const Bill = require("../models/Bill");
 const Product = require("../models/Product");
 const Customer = require("../models/Customer");
 
+const recentBillSubmissions = new Map();
+
 const createBill = async (req, res) => {
   try {
     const { customer, items, paidAmount } = req.body;
@@ -11,6 +13,18 @@ const createBill = async (req, res) => {
         message: "Customer and items are required",
       });
     }
+
+    const dedupeKey = `${req.user?.id || ""}_${customer}_${Number(paidAmount) || 0}_${items.length}`;
+    const now = Date.now();
+    if (recentBillSubmissions.has(dedupeKey) && (now - recentBillSubmissions.get(dedupeKey)) < 3000) {
+      return res.status(429).json({
+        message: "Bill creation is already in progress. Please wait a moment.",
+      });
+    }
+    recentBillSubmissions.set(dedupeKey, now);
+    setTimeout(() => {
+      recentBillSubmissions.delete(dedupeKey);
+    }, 4000);
 
     const foundCustomer = await Customer.findById(customer);
     if (!foundCustomer) {

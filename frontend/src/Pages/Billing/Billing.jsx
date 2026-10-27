@@ -28,6 +28,7 @@ function Billing() {
   const [showOverpaidWarning, setShowOverpaidWarning] = useState(false);
   const [showAddProductWarning, setShowAddProductWarning] = useState(false);
   const [showAddProductButtonWarning, setShowAddProductButtonWarning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [filterCustomer, setFilterCustomer] = useState("");
   const [filterCustomerSearch, setFilterCustomerSearch] = useState("");
@@ -160,6 +161,8 @@ function Billing() {
   const handleCreateBill = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return;
+
     if (!selectedCustomer) {
       setShowCustomerWarning(true);
       setShowCustomerResults(true);
@@ -222,6 +225,7 @@ function Billing() {
     };
 
     try {
+      setIsSubmitting(true);
       await createBill(billData);
 
       setItems([]);
@@ -239,6 +243,8 @@ function Billing() {
       fetchData();
     } catch (error) {
       alert(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -666,7 +672,13 @@ function Billing() {
               </p>
             </div>
 
-            <button type="submit" className="billing-create-btn">Create Bill</button>
+            <button
+              type="submit"
+              className="billing-create-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creating Bill..." : "Create Bill"}
+            </button>
           </form>
         </section>
 
