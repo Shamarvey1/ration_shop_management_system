@@ -218,9 +218,22 @@ function Billing() {
     setShowPaidAmountWarning(false);
     setShowOverpaidWarning(false);
 
+    const validItems = items
+      .filter((item) => item && item.product && String(item.product).trim() !== "")
+      .map((item) => ({
+        product: item.product,
+        quantity: Math.max(1, Number(item.quantity) || 1),
+      }));
+
+    if (validItems.length === 0) {
+      setShowAddProductWarning(true);
+      alert("Please select at least one product");
+      return;
+    }
+
     const billData = {
       customer: selectedCustomer,
-      items,
+      items: validItems,
       paidAmount: numericPaidAmount,
     };
 

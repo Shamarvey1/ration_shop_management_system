@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Bill = require("../models/Bill");
 const Product = require("../models/Product");
 const Customer = require("../models/Customer");
@@ -8,13 +9,23 @@ const createBill = async (req, res) => {
   try {
     const { customer, items, paidAmount } = req.body;
 
-    if (!customer || !items || items.length === 0) {
+    if (!customer || !mongoose.Types.ObjectId.isValid(customer)) {
       return res.status(400).json({
-        message: "Customer and items are required",
+        message: "Valid customer is required",
       });
     }
 
-    const dedupeKey = `${req.user?.id || ""}_${customer}_${Number(paidAmount) || 0}_${items.length}`;
+    const validItems = (Array.isArray(items) ? items : []).filter(
+      (item) => item && item.product && mongoose.Types.ObjectId.isValid(item.product)
+    );
+
+    if (validItems.length === 0) {
+      return res.status(400).json({
+        message: "At least one valid product is required",
+      });
+    }
+
+    const dedupeKey = `${req.user?.id || ""}_${customer}_${Number(paidAmount) || 0}_${validItems.length}`;
     const now = Date.now();
     if (recentBillSubmissions.has(dedupeKey) && (now - recentBillSubmissions.get(dedupeKey)) < 3000) {
       return res.status(429).json({
@@ -36,7 +47,7 @@ const createBill = async (req, res) => {
     let totalAmount = 0;
     const processedItems = [];
 
-    for (let item of items) {
+    for (let item of validItems) {
       const product = await Product.findById(item.product);
 
       if (!product) {
@@ -45,7 +56,7 @@ const createBill = async (req, res) => {
         });
       }
 
-      const quantity = item.quantity;
+      const quantity = Math.max(1, Number(item.quantity) || 1);
 
       if (product.quantity < quantity) {
         return res.status(400).json({
@@ -100,7 +111,7 @@ const createBill = async (req, res) => {
 
   } catch (error) {
     console.error("Create Bill Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
