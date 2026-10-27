@@ -16,6 +16,7 @@ const AppRoutes = () => {
       <Route path='/signup' element={<Signup/>}></Route>
 
       <Route path='/' element={<ProtectedRoute><Layout/></ProtectedRoute>}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="products" element={<Products />} />
         <Route path="billing" element={<Billing />} />

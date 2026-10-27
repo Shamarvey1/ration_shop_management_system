@@ -2,64 +2,52 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API_URL } from "../constants/api";
 
-function ProtectedRoute({ children }) {
-  const tokenInStorage = () => {
-    const token = localStorage.getItem("token");
-    return token && token !== "undefined" && token !== "null";
-  };
+const isTokenValid = () => {
+  const token = localStorage.getItem("token");
+  if (!token || token === "undefined" || token === "null") return false;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(atob(parts[1]));
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      localStorage.removeItem("token");
+      return false;
+    }
+    return true;
+  } catch {
+    localStorage.removeItem("token");
+    return false;
+  }
+};
 
-  const [checking, setChecking] = useState(!tokenInStorage());
-  const [isAuthenticated, setIsAuthenticated] = useState(tokenInStorage());
+function ProtectedRoute({ children }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(isTokenValid());
   const location = useLocation();
 
   useEffect(() => {
     const validate = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token || token === "undefined" || token === "null") {
+      if (!isTokenValid()) {
         localStorage.removeItem("token");
         setIsAuthenticated(false);
-        setChecking(false);
         return;
       }
 
+      const token = localStorage.getItem("token");
       try {
-        setChecking(true);
         const res = await fetch(`${API_URL}/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (res.ok) {
-          setIsAuthenticated(true);
-        } else {
+        if (!res.ok) {
           localStorage.removeItem("token");
           setIsAuthenticated(false);
         }
-      } catch (err) {
-        localStorage.removeItem("token");
-        setIsAuthenticated(false);
-      } finally {
-        setChecking(false);
+      } catch {
       }
     };
 
     validate();
   }, [location.pathname]);
-
-  if (checking && isAuthenticated) {
-    return (
-      <div style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "14px",
-        color: "#4b5563",
-      }}>
-        Loading...
-      </div>
-    );
-  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
