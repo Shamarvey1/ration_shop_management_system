@@ -273,12 +273,13 @@ function buildInsights(bills, products, customerDebtTotal, filter, periodRange, 
     const dt = new Date(bill.createdAt);
     if (Number.isNaN(dt.getTime())) return;
 
+    const istDate = new Date(dt.getTime() + 5.5 * 60 * 60 * 1000);
     const key =
       trendGroupFormat === "%Y"
-        ? String(dt.getFullYear())
+        ? String(istDate.getUTCFullYear())
         : trendGroupFormat === "%Y-%m"
-          ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`
-          : `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+          ? `${istDate.getUTCFullYear()}-${String(istDate.getUTCMonth() + 1).padStart(2, "0")}`
+          : `${istDate.getUTCFullYear()}-${String(istDate.getUTCMonth() + 1).padStart(2, "0")}-${String(istDate.getUTCDate()).padStart(2, "0")}`;
 
     trendMap.set(key, (trendMap.get(key) || 0) + Number(bill.totalAmount || 0));
   });

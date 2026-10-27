@@ -4,6 +4,8 @@ import {
 } from "../../services/reportService";
 
 import {
+  AreaChart,
+  Area,
   LineChart,
   Line,
   XAxis,
@@ -67,10 +69,107 @@ function Reports() {
   if (error) return <p className="reports-error">{error}</p>;
   if (!insights) return <p className="reports-error">No report data available.</p>;
 
-  const salesTrendData = (insights.salesTrend || []).map((item) => ({
-    date: item._id,
-    sales: item.totalSales,
-  }));
+  const formatTrendDateLabel = (dateStr, activeFilter) => {
+    if (!dateStr) return "";
+    if (activeFilter === "yearly") return dateStr;
+    if (activeFilter === "monthly") {
+      const parts = dateStr.split("-");
+      if (parts.length >= 2) {
+        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+        return d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+      }
+      return dateStr;
+    }
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+    }
+    return dateStr;
+  };
+
+  const formatCompactCurrency = (val) => {
+    const num = Number(val || 0);
+    if (num >= 100000) return `₹${(num / 100000).toFixed(1)}L`;
+    if (num >= 1000) return `₹${(num / 1000).toFixed(0)}k`;
+    return `₹${num}`;
+  };
+
+  const prepareSalesTrend = (rawTrend, activeFilter, from, to) => {
+    if (!Array.isArray(rawTrend) || rawTrend.length === 0) return [];
+
+    if (activeFilter !== "daily") {
+      return rawTrend.map((item) => ({
+        date: item._id,
+        label: formatTrendDateLabel(item._id, activeFilter),
+        sales: Number(item.totalSales || 0),
+      }));
+    }
+
+    const map = new Map(rawTrend.map((item) => [item._id, Number(item.totalSales || 0)]));
+
+    let start = from ? new Date(from) : null;
+    let end = to ? new Date(to) : null;
+
+    if (!start || !end) {
+      const parsedDates = rawTrend
+        .map((t) => new Date(t._id))
+        .filter((d) => !Number.isNaN(d.getTime()));
+
+      if (parsedDates.length > 0) {
+        const minDate = new Date(Math.min(...parsedDates));
+        const maxDate = new Date(Math.max(...parsedDates));
+        const daysDiff = Math.round((maxDate - minDate) / (1000 * 60 * 60 * 24));
+
+        if (daysDiff < 6) {
+          start = new Date(maxDate);
+          start.setDate(maxDate.getDate() - 6);
+          end = maxDate;
+        } else if (daysDiff <= 31) {
+          start = minDate;
+          end = maxDate;
+        } else {
+          start = new Date(maxDate);
+          start.setDate(maxDate.getDate() - 14);
+          end = maxDate;
+        }
+      } else {
+        end = new Date();
+        start = new Date();
+        start.setDate(end.getDate() - 6);
+      }
+    }
+
+    const points = [];
+    const curr = new Date(start);
+    curr.setHours(0, 0, 0, 0);
+    const finish = new Date(end);
+    finish.setHours(0, 0, 0, 0);
+
+    while (curr <= finish) {
+      const year = curr.getFullYear();
+      const month = String(curr.getMonth() + 1).padStart(2, "0");
+      const day = String(curr.getDate()).padStart(2, "0");
+      const dateKey = `${year}-${month}-${day}`;
+
+      points.push({
+        date: dateKey,
+        label: curr.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+        sales: map.get(dateKey) || 0,
+      });
+
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    return points;
+  };
+
+  const salesTrendData = prepareSalesTrend(
+    insights.salesTrend || [],
+    filter,
+    fromDate,
+    toDate
+  );
 
   const topProductsChartData = (insights.topProducts || []).slice(0, 5).map((p) => ({
     name: p.name,
@@ -220,15 +319,55 @@ function Reports() {
             </span>
           </div>
           <div className="reports-chart-wrap">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={salesTrendData} margin={{ top: 10, right: 12, left: 0, bottom: 2 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
-                <XAxis dataKey="date" tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-                <Line type="monotone" dataKey="sales" stroke="#2E7D32" strokeWidth={3} dot={{ r: 2 }} activeDot={{ r: 5 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            {salesTrendData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={salesTrendData} margin={{ top: 12, right: 12, left: -6, bottom: 4 }}>
+                  <defs>
+                    <linearGradient id="reportsSalesGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2E7D32" stopOpacity={0.28} />
+                      <stop offset="95%" stopColor="#2E7D32" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={formatCompactCurrency}
+                    domain={[0, (dataMax) => Math.max(100, Math.ceil(dataMax * 1.15))]}
+                  />
+                  <Tooltip
+                    formatter={(value) => [formatCurrency(value), "Sales"]}
+                    contentStyle={{
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      backgroundColor: "#ffffff",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                      fontSize: "13px",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="sales"
+                    stroke="#2E7D32"
+                    strokeWidth={3}
+                    fill="url(#reportsSalesGradient)"
+                    dot={{ r: 3.5, fill: "#2E7D32", stroke: "#ffffff", strokeWidth: 1.5 }}
+                    activeDot={{ r: 6, fill: "#1B5E28", stroke: "#ffffff", strokeWidth: 2 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#94a3b8", fontSize: "14px" }}>
+                No sales recorded for this period
+              </div>
+            )}
           </div>
         </article>
 
