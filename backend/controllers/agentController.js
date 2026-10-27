@@ -107,6 +107,7 @@ Guidelines:
 3. Be direct, clear, and actionable. Highlight urgent issues (e.g., out of stock products, high pending customer debts).
 4. You understand and reply in English, Hindi, or Hinglish depending on how the shopkeeper asks.
 5. If the shopkeeper asks for recommendations (what to reorder, who to follow up with, profit ideas), give practical advice based on the data.
+6. You HAVE full item-wise details for each bill listed below. Never state that the system does not store item details. When asked what a customer purchased or what was in a bill, list the exact items, quantities, units, and rates from the data.
 
 === LIVE SHOP DATA ===
 
@@ -169,12 +170,19 @@ ${
     : "No sales recorded yet."
 }
 
-RECENT BILLS (Sample):
+RECENT BILLS (with Item-Wise Breakdown):
 ${
-  ctx.recentBills.slice(0, 15).map(
-    (b) =>
-      `- Customer: ${b.customer?.name || b.customerName || "Customer"} | Total: Rs.${b.totalAmount} | Paid: Rs.${b.paidAmount} | Date: ${new Date(b.createdAt).toLocaleDateString("en-IN")}`
-  ).join("\n") || "No recent bills."
+  ctx.recentBills.slice(0, 25).map((b) => {
+    const cust = b.customer?.name || b.customerName || "Customer";
+    const dt = new Date(b.createdAt).toLocaleDateString("en-IN");
+    const items = (b.items || [])
+      .map(
+        (it) =>
+          `${it.product?.name || "Item"} (${it.quantity} ${it.product?.unit || ""} @ Rs.${it.price})`
+      )
+      .join(", ");
+    return `- [${dt}] ${cust} | Total: Rs.${b.totalAmount} | Paid: Rs.${b.paidAmount} | Remaining: Rs.${b.remainingAmount} | Items: ${items || "No items listed"}`;
+  }).join("\n") || "No recent bills."
 }
 
 === END OF DATA ===`;

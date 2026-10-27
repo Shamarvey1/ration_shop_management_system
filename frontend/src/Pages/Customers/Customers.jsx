@@ -21,6 +21,7 @@ function Customers() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedBillId, setExpandedBillId] = useState(null);
   const fetchCustomers = async () => {
     try {
       setLoading(true);
@@ -297,15 +298,45 @@ function Customers() {
                           <span>Remaining</span>
                         </div>
                         {customerDetails.bills
-                          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-                          .map((bill) => (
-                          <div key={bill._id} className="history-row">
-                            <span>{new Date(bill.createdAt).toLocaleDateString()}</span>
-                            <span>₹{bill.totalAmount}</span>
-                            <span>₹{bill.paidAmount}</span>
-                            <span>₹{bill.remainingAmount}</span>
-                          </div>
-                        ))}
+                          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                          .map((bill) => {
+                            const isExpanded = expandedBillId === bill._id;
+                            return (
+                              <div key={bill._id} className="history-bill-group">
+                                <div
+                                  className="history-row"
+                                  onClick={() => setExpandedBillId(isExpanded ? null : bill._id)}
+                                  style={{ cursor: "pointer" }}
+                                  title="Click to view item details"
+                                >
+                                  <span>{new Date(bill.createdAt).toLocaleDateString()}</span>
+                                  <span>₹{bill.totalAmount}</span>
+                                  <span>₹{bill.paidAmount}</span>
+                                  <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span>₹{bill.remainingAmount}</span>
+                                    <span style={{ fontSize: "11px", color: "#2E7D32", fontWeight: 700 }}>
+                                      {isExpanded ? "▲" : "▼"}
+                                    </span>
+                                  </span>
+                                </div>
+                                {isExpanded && (
+                                  <div className="history-bill-items-drawer">
+                                    {bill.items?.length > 0 ? (
+                                      bill.items.map((it, idx) => (
+                                        <div key={idx} className="history-bill-item-row">
+                                          <span>{it.product?.name || "Item"}</span>
+                                          <span>{it.quantity} {it.product?.unit || ""} × ₹{it.price}</span>
+                                          <span style={{ fontWeight: 600 }}>₹{it.quantity * it.price}</span>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p style={{ margin: 0, fontSize: "12px", color: "#64748b" }}>No item details recorded</p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                       </div>
                     ) : (
                       <p>No payment history yet</p>
