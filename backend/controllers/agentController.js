@@ -215,7 +215,7 @@ const chatWithAgent = async (req, res) => {
 
     if (!process.env.GROQ_API_KEY) {
       return res.status(500).json({
-        error: "GROQ_API_KEY is not configured in backend/.env",
+        error: "GROQ_API_KEY is not configured in your backend environment variables (Add it in Render Dashboard > Environment).",
       });
     }
 
