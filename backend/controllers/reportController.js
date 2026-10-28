@@ -74,16 +74,21 @@ function getCurrentPreviousPeriodBounds(filter) {
     };
   }
 
-  const todayBounds = getISTDayBounds(now);
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  const yesterdayBounds = getISTDayBounds(yesterday);
+  const currentStart = new Date(now);
+  currentStart.setDate(now.getDate() - 30);
+  currentStart.setHours(0, 0, 0, 0);
+
+  const previousEnd = new Date(currentStart);
+  previousEnd.setMilliseconds(-1);
+
+  const previousStart = new Date(currentStart);
+  previousStart.setDate(currentStart.getDate() - 30);
 
   return {
-    currentStart: todayBounds.start,
-    currentEnd: todayBounds.end,
-    previousStart: yesterdayBounds.start,
-    previousEnd: yesterdayBounds.end,
+    currentStart,
+    currentEnd: now,
+    previousStart,
+    previousEnd,
   };
 }
 
@@ -104,10 +109,12 @@ function getCurrentPeriodBounds(filter) {
     };
   }
 
-  const todayBounds = getISTDayBounds(now);
+  const start = new Date(now);
+  start.setDate(now.getDate() - 30);
+  start.setHours(0, 0, 0, 0);
   return {
-    start: todayBounds.start,
-    end: todayBounds.end,
+    start,
+    end: now,
   };
 }
 

@@ -374,34 +374,40 @@ function Reports() {
         <article className="reports-panel">
           <div className="reports-panel-header"><h3>Sales by Category</h3></div>
           <div className="reports-chart-wrap">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 6, right: 6, left: 6, bottom: 6 }}>
-                <Pie
-                  data={categoryChartData}
-                  dataKey="sales"
-                  nameKey="name"
-                  cx="50%"
-                  cy="40%"
-                  outerRadius={58}
-                  innerRadius={29}
-                  paddingAngle={2}
-                >
-                  {categoryChartData.map((entry, index) => (
-                    <Cell
-                      key={`category-slice-${entry.name}`}
-                      fill={categoryPieColors[index % categoryPieColors.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-                <Legend
-                  verticalAlign="bottom"
-                  height={22}
-                  iconType="circle"
-                  wrapperStyle={{ fontSize: "11px", color: "#334155", paddingTop: "2px" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {categoryChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart margin={{ top: 6, right: 6, left: 6, bottom: 6 }}>
+                  <Pie
+                    data={categoryChartData}
+                    dataKey="sales"
+                    nameKey="name"
+                    cx="50%"
+                    cy="40%"
+                    outerRadius={58}
+                    innerRadius={29}
+                    paddingAngle={2}
+                  >
+                    {categoryChartData.map((entry, index) => (
+                      <Cell
+                        key={`category-slice-${entry.name}`}
+                        fill={categoryPieColors[index % categoryPieColors.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={22}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: "11px", color: "#334155", paddingTop: "2px" }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#94a3b8", fontSize: "14px" }}>
+                No category sales recorded for this period
+              </div>
+            )}
           </div>
         </article>
       </section>
@@ -410,30 +416,42 @@ function Reports() {
         <article className="reports-panel">
           <div className="reports-panel-header"><h3>Top Profitable Products</h3></div>
           <div className="reports-list">
-            {(insights.topProfitableProducts || []).map((item) => (
-              <div key={item.name} className="reports-row">
-                <div>
-                  <p className="reports-title">{item.name}</p>
-                  <p className="reports-subtitle">Margin {formatPercent(item.marginPercent)}</p>
+            {(insights.topProfitableProducts || []).length > 0 ? (
+              insights.topProfitableProducts.map((item) => (
+                <div key={item.name} className="reports-row">
+                  <div>
+                    <p className="reports-title">{item.name}</p>
+                    <p className="reports-subtitle">Margin {formatPercent(item.marginPercent)}</p>
+                  </div>
+                  <p className="reports-amount">{formatCurrency(item.profit)}</p>
                 </div>
-                <p className="reports-amount">{formatCurrency(item.profit)}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ margin: 0, padding: "24px 0", textAlign: "center", color: "#94a3b8", fontSize: "13px" }}>
+                No profitable products data for this period
+              </p>
+            )}
           </div>
         </article>
 
         <article className="reports-panel">
           <div className="reports-panel-header"><h3>Low Margin Products</h3></div>
           <div className="reports-list">
-            {(insights.lowMarginProducts || []).map((item) => (
-              <div key={item.name} className="reports-row">
-                <div>
-                  <p className="reports-title">{item.name}</p>
-                  <p className="reports-subtitle">Profit {formatCurrency(item.profit)}</p>
+            {(insights.lowMarginProducts || []).length > 0 ? (
+              insights.lowMarginProducts.map((item) => (
+                <div key={item.name} className="reports-row">
+                  <div>
+                    <p className="reports-title">{item.name}</p>
+                    <p className="reports-subtitle">Profit {formatCurrency(item.profit)}</p>
+                  </div>
+                  <p className="reports-amount">{formatPercent(item.marginPercent)}</p>
                 </div>
-                <p className="reports-amount">{formatPercent(item.marginPercent)}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ margin: 0, padding: "24px 0", textAlign: "center", color: "#94a3b8", fontSize: "13px" }}>
+                No low margin products for this period
+              </p>
+            )}
           </div>
         </article>
 
@@ -468,26 +486,32 @@ function Reports() {
         <article className="reports-panel">
           <div className="reports-panel-header"><h3>Top Products by Quantity</h3></div>
           <div className="reports-chart-wrap">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={topProductsChartData}
-                layout="vertical"
-                margin={{ top: 4, right: 18, left: 8, bottom: 4 }}
-              >
-                <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
-                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  width={110}
-                  tick={{ fill: "#64748b", fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip />
-                <Bar dataKey="quantity" fill="#2E7D32" radius={[0, 8, 8, 0]} barSize={16} />
-              </BarChart>
-            </ResponsiveContainer>
+            {topProductsChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={topProductsChartData}
+                  layout="vertical"
+                  margin={{ top: 4, right: 18, left: 8, bottom: 4 }}
+                >
+                  <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+                  <XAxis type="number" tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={110}
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip />
+                  <Bar dataKey="quantity" fill="#2E7D32" radius={[0, 8, 8, 0]} barSize={16} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#94a3b8", fontSize: "14px" }}>
+                No product sales recorded for this period
+              </div>
+            )}
           </div>
         </article>
       </section>
