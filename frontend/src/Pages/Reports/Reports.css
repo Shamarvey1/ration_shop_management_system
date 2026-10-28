@@ -200,8 +200,7 @@
 }
 
 .reports-grid-single .reports-panel {
-  min-height: 170px;
-  max-height: 180px;
+  min-height: 240px;
 }
 
 .reports-panel-header {
@@ -238,7 +237,7 @@
 }
 
 .reports-grid-single .reports-chart-wrap {
-  min-height: 100px;
+  min-height: 170px;
 }
 
 .reports-list {

@@ -498,7 +498,8 @@ function Reports() {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={110}
+                    width={120}
+                    interval={0}
                     tick={{ fill: "#64748b", fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
